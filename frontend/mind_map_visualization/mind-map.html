@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mind Map - TracePath</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.globe.min.js"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed-variant": "#38485d",
+                        "error-container": "#ffdad6",
+                        "surface-tint": "#0054d6",
+                        "on-error": "#ffffff",
+                        "surface-dim": "#d8dadc",
+                        "secondary-container": "#d0e1fb",
+                        "surface-container-low": "#f2f4f6",
+                        "outline-variant": "#c2c6d8",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "surface-bright": "#f7f9fb",
+                        "error": "#ba1a1a",
+                        "secondary": "#505f76",
+                        "on-tertiary-fixed": "#390c00",
+                        "on-secondary": "#ffffff",
+                        "primary": "#0050cb",
+                        "background": "#f7f9fb",
+                        "tertiary": "#a33200",
+                        "secondary-fixed": "#d3e4fe",
+                        "tertiary-fixed-dim": "#ffb59d",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "on-surface": "#191c1e",
+                        "on-secondary-fixed": "#0b1c30",
+                        "inverse-primary": "#b3c5ff",
+                        "outline": "#727687",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-primary": "#ffffff",
+                        "surface": "#f7f9fb",
+                        "primary-fixed": "#dae1ff",
+                        "surface-variant": "#e0e3e5",
+                        "primary-container": "#0066ff",
+                        "on-primary-fixed": "#001849",
+                        "on-tertiary-container": "#fff6f4",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#eceef0",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#54647a",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#e6e8ea",
+                        "on-tertiary-fixed-variant": "#832600",
+                        "inverse-surface": "#2d3133",
+                        "tertiary-fixed": "#ffdbd0",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-primary-container": "#f8f7ff",
+                        "tertiary-container": "#cc4204",
+                        "on-surface-variant": "#424656",
+                        "on-background": "#191c1e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        * {
+            cursor: auto !important;
+        }
+
+        body {
+            cursor: auto;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+
+        /* Interactive Dot Grid Background */
+        #dot-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.12);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+        }
+        
+        .dot.active {
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.6), 0 0 24px rgba(0, 80, 203, 0.3);
+            transform: scale(1.3);
+        }
+
+        /* Vanta Globe Container */
+        #vanta-globe {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .knowledge-graph-line {
+            stroke: #c2c6d8;
+            stroke-width: 1;
+            stroke-dasharray: 4;
+            opacity: 0.5;
+            transition: stroke 0.3s ease, opacity 0.3s ease;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(24px);
+        }
+
+        /* Smooth animations */
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(0, 80, 203, 0.3), 0 0 40px rgba(0, 80, 203, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(0, 80, 203, 0.5), 0 0 60px rgba(0, 80, 203, 0.2);
+            }
+        }
+
+        /* Center node animation */
+        .center-node {
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+
+        /* Secondary nodes animation */
+        .secondary-node {
+            animation: fadeInScale 0.6s ease-out;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .secondary-node:hover {
+            transform: scale(1.15) !important;
+            filter: drop-shadow(0 10px 20px rgba(0, 80, 203, 0.3));
+        }
+
+        /* Sub-node animations */
+        .sub-node {
+            animation: slideInUp 0.5s ease-out;
+            transition: all 0.3s ease;
+        }
+
+        .sub-node:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 80, 203, 0.2) !important;
+        }
+
+        /* Header animation */
+        header {
+            animation: slideInUp 0.6s ease-out;
+        }
+
+        /* Sidebar animation */
+        aside {
+            animation: slideInUp 0.6s ease-out 0.1s both;
+        }
+
+        /* Control buttons animation */
+        .floating-controls {
+            animation: slideInUp 0.6s ease-out 0.2s both;
+        }
+
+        /* Info card animation */
+        .info-card {
+            animation: slideInUp 0.6s ease-out 0.3s both;
+        }
+
+        /* Enhanced button interactions */
+        button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left 0.5s ease;
+            z-index: -1;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        /* SVG layer smooth transitions */
+        svg {
+            transition: all 0.3s ease;
+        }
+
+        /* Main canvas smooth interaction */
+        main {
+            position: relative;
+            z-index: 10;
+        }
+</style>
+</head>
+<body class="bg-surface font-body text-on-surface flex h-screen overflow-hidden">
+<!-- Interactive Dot Grid Background -->
+<div id="dot-grid"></div>
+
+<!-- Vanta Globe Background -->
+<div id="vanta-globe"></div>
+
+<!-- SideNavBar (Shared Component JSON Mapping) -->
+<aside class="hidden md:flex flex-col h-full p-4 gap-2 bg-slate-50 dark:bg-slate-950 h-screen w-64 rounded-r-3xl font-inter text-sm tonal-definition bg-slate-100">
+<div class="flex items-center gap-3 px-4 py-6">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+</div>
+<div>
+<h1 class="text-lg font-black text-blue-600">TracePath</h1>
+<p class="text-[10px] text-slate-500 uppercase tracking-widest">Premium Curator</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all rounded-xl ease-in-out duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span>Home</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all rounded-xl ease-in-out duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span>Search</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all rounded-xl ease-in-out duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="folder_special">folder_special</span>
+<span>Collections</span>
+</a>
+<!-- Active State Logic: Mind Map is the current screen -->
+<a class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-900 text-blue-600 shadow-sm rounded-xl font-semibold transition-all ease-in-out duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+<span>Mind Map</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all rounded-xl ease-in-out duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+</nav>
+<div class="mt-auto space-y-1 pt-4 border-t border-slate-200/50">
+<button class="w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl font-semibold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+<span>Upload File</span>
+</button>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all rounded-xl ease-in-out duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span>Help</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all rounded-xl ease-in-out duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+
+<!-- Main Canvas Area -->
+<main class="flex-1 relative overflow-hidden bg-surface flex flex-col">
+<!-- TopAppBar (Shared Component JSON Mapping) -->
+<header class="flex justify-between items-center w-full px-6 py-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-50 shadow-sm">
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="absolute inset-y-0 left-3 flex items-center text-slate-400">
+<span class="material-symbols-outlined text-sm" data-icon="search">search</span>
+</span>
+<input class="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-full text-sm w-64 focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search mind map..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-slate-200">
+<img alt="Professional user profile" data-alt="Close-up of a diverse professional woman smiling with a soft natural background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzndc8oQlAmDdd2RsOivz3w4AfuC9danX0z2kxJfzezwx9Ff1m6Os18ELgbnadJCLgPssSf6gmcbDLzgUkDhTuz9Gi1kBjue4XaknQuy10xshxUykEBRQJg2o_-sPh-HrEG9ZguRL5DtmcvVnUn1wvaaDt4cwLro4xlQLhQ4D-73Mh7UVxsUIMeg-1zadLlQnu8ak3VFw80IKIvx81Ouw1glB-2H4CndYsuQatk7ntTKGlnOILWdFoJ0toFwYLvPH4-deGU4v1Lw"/>
+</div>
+</div>
+</header>
+
+<!-- Interactive Mind Map Canvas -->
+<div class="flex-1 relative cursor-grab active:cursor-grabbing bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px]">
+<!-- SVG Layer for Connecting Lines -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none">
+<!-- Center to Secondary Nodes -->
+<line class="knowledge-graph-line" x1="50%" x2="30%" y1="50%" y2="35%"></line>
+<line class="knowledge-graph-line" x1="50%" x2="70%" y1="50%" y2="35%"></line>
+<line class="knowledge-graph-line" x1="50%" x2="50%" y1="50%" y2="75%"></line>
+<!-- GitHub Repos to Subs -->
+<line class="knowledge-graph-line" x1="30%" x2="20%" y1="35%" y2="25%"></line>
+<line class="knowledge-graph-line" x1="30%" x2="15%" y1="35%" y2="40%"></line>
+<!-- Project Folders to Subs -->
+<line class="knowledge-graph-line" x1="70%" x2="80%" y1="35%" y2="25%"></line>
+<line class="knowledge-graph-line" x1="70%" x2="85%" y1="35%" y2="40%"></line>
+<line class="knowledge-graph-line" x1="70%" x2="75%" y1="35%" y2="15%"></line>
+<!-- Recent Docs to Subs -->
+<line class="knowledge-graph-line" x1="50%" x2="40%" y1="75%" y2="85%"></line>
+<line class="knowledge-graph-line" x1="50%" x2="60%" y1="75%" y2="85%"></line>
+</svg>
+
+<!-- Node: Central Workspace -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+<div class="center-node w-32 h-32 rounded-full bg-primary flex flex-col items-center justify-center text-white shadow-2xl shadow-primary/40 ring-8 ring-white/50">
+<span class="material-symbols-outlined text-4xl mb-1" data-icon="workspaces" data-weight="fill">workspaces</span>
+<span class="font-headline font-bold text-xs tracking-tight">My Workspace</span>
+</div>
+</div>
+
+<!-- Node: GitHub Repos -->
+<div class="absolute top-[35%] left-[30%] -translate-x-1/2 -translate-y-1/2 group">
+<div class="secondary-node w-20 h-20 rounded-full glass-panel border border-primary/20 flex flex-col items-center justify-center text-primary shadow-xl group-hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-2xl" data-icon="code">code</span>
+<span class="font-label text-[10px] mt-1 font-semibold">GitHub Repos</span>
+</div>
+<!-- Sub-Nodes for GitHub -->
+<div class="sub-node absolute -top-16 -left-12 opacity-80">
+<div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
+<span class="material-symbols-outlined text-sm text-slate-500" data-icon="folder">folder</span>
+<span class="text-[10px] font-medium">frontend-ui</span>
+</div>
+</div>
+<div class="sub-node absolute top-4 -left-20 opacity-80">
+<div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
+<span class="material-symbols-outlined text-sm text-slate-500" data-icon="folder">folder</span>
+<span class="text-[10px] font-medium">backend-api</span>
+</div>
+</div>
+</div>
+
+<!-- Node: Project Folders -->
+<div class="absolute top-[35%] left-[70%] -translate-x-1/2 -translate-y-1/2 group">
+<div class="secondary-node w-20 h-20 rounded-full glass-panel border border-primary/20 flex flex-col items-center justify-center text-primary shadow-xl group-hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-2xl" data-icon="folder">folder</span>
+<span class="font-label text-[10px] mt-1 font-semibold">Project Folders</span>
+</div>
+<!-- Sub-Nodes for Projects -->
+<div class="sub-node absolute -top-16 right-0 opacity-80">
+<div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
+<span class="material-symbols-outlined text-sm text-tertiary" data-icon="folder">folder</span>
+<span class="text-[10px] font-medium">Marketing</span>
+</div>
+</div>
+<div class="sub-node absolute top-4 -right-24 opacity-80">
+<div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
+<span class="material-symbols-outlined text-sm text-primary" data-icon="folder">folder</span>
+<span class="text-[10px] font-medium">Q4 Reports</span>
+</div>
+</div>
+<div class="sub-node absolute -top-24 -right-12 opacity-80">
+<div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
+<span class="material-symbols-outlined text-sm text-orange-400" data-icon="folder">folder</span>
+<span class="text-[10px] font-medium">Designs</span>
+</div>
+</div>
+</div>
+
+<!-- Node: Recent Documents -->
+<div class="absolute top-[75%] left-[50%] -translate-x-1/2 -translate-y-1/2 group">
+<div class="secondary-node w-20 h-20 rounded-full glass-panel border border-primary/20 flex flex-col items-center justify-center text-primary shadow-xl group-hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-2xl" data-icon="history">history</span>
+<span class="font-label text-[10px] mt-1 font-semibold text-center">Recent<br/>Docs</span>
+</div>
+<!-- Sub-Nodes for Docs -->
+<div class="sub-node absolute top-16 -left-24 opacity-80">
+<div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl shadow-md border border-slate-100">
+<span class="material-symbols-outlined text-red-500 text-sm" data-icon="description">description</span>
+<span class="text-[10px] font-medium">strategy_v2.pdf</span>
+</div>
+</div>
+<div class="sub-node absolute top-16 -right-24 opacity-80">
+<div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl shadow-md border border-slate-100">
+<span class="material-symbols-outlined text-blue-500 text-sm" data-icon="article">article</span>
+<span class="text-[10px] font-medium">meeting_notes.docx</span>
+</div>
+</div>
+</div>
+
+<!-- Floating Controls -->
+<div class="floating-controls absolute bottom-8 right-8 flex flex-col gap-3">
+<div class="flex flex-col bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+<button class="p-3 hover:bg-slate-50 transition-colors text-slate-600 border-b border-slate-100">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+<button class="p-3 hover:bg-slate-50 transition-colors text-slate-600">
+<span class="material-symbols-outlined" data-icon="remove">remove</span>
+</button>
+</div>
+<button class="w-12 h-12 rounded-2xl bg-white shadow-2xl border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors">
+<span class="material-symbols-outlined" data-icon="restart_alt">restart_alt</span>
+</button>
+<button class="w-12 h-12 rounded-2xl bg-primary text-white shadow-2xl shadow-primary/30 flex items-center justify-center hover:scale-105 transition-transform">
+<span class="material-symbols-outlined" data-icon="fullscreen">fullscreen</span>
+</button>
+</div>
+
+<!-- Map Mini-preview / Info card -->
+<div class="info-card absolute bottom-8 left-8 w-64 glass-panel p-5 rounded-3xl border border-white shadow-2xl">
+<h3 class="font-headline font-bold text-slate-900 mb-1">Knowledge Graph</h3>
+<p class="text-xs text-slate-500 mb-4 leading-relaxed">Visualizing 24 connections across 3 primary data streams in your workspace.</p>
+<div class="flex gap-2">
+<div class="flex -space-x-2">
+<img alt="Team member" class="w-6 h-6 rounded-full border-2 border-white" data-alt="Close-up of a diverse professional woman smiling with a soft natural background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOrcl5jU4yI41toRdrNlZPVD3biRrMbbTN0RREHQpTwT7qolgzImk8Ubd-RIrV6BHsnTG9Eflm3eRQsbqnQM_FN_xYUtQZTbt55qF19fRKklEBCXlNWfhaHveEBvdpBdB-XEAKtdiDY5CTFoOW7klnqeie07hbtgPwFz5ZZXF8Hww_rJQ_P354ZqzpVfD8dgbEaxzXEfBdxQN9erD-ZjvcjngW9OI5n4TzAb_aYFYy6m7hRXHr7FdkVWvXu2H3Cauf7OCt3MTjWQ"/>
+<img alt="Team member" class="w-6 h-6 rounded-full border-2 border-white" data-alt="Close-up portrait of a young professional man with glasses in a modern office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3nJvWGXAitbW0L0JWiUCJZi0R0e8Fq6xPWNLWCw3zxfU1ZK0J5m53WB6orOopBw4V-eDw0wlMTFXp050u9lzEcYl67r8Nb5HSIZ92nphzgZBd3dW28AZsrLeE4VQiWZJTOwTsz7Xn2A_wyVZ-SZ8WjT8z4md0JYDaRE8HgOtx21pOjIX-C9meHHlslBss2b2Fv3Vg2uDRXQvfRXTyUFSz1BHw36vjFg7oMKzPbS9bH0xx25V2_EjfcR2UjK5PTHug7F4_qPyROw"/>
+<div class="w-6 h-6 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[8px] font-bold text-slate-400">+4</div>
+</div>
+<span class="text-[10px] font-medium text-slate-400 self-center">Shared with team</span>
+</div>
+</div>
+</div>
+</main>
+
+<!-- Mobile Bottom Navigation (Shared Component Logic) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 glass-panel border-t border-slate-100 flex justify-around items-center py-3 px-4 z-[100]">
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+<span class="text-[10px] font-medium">Search</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-symbols-outlined" data-icon="hub" data-weight="fill">hub</span>
+<span class="text-[10px] font-bold">Map</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-[10px] font-medium">Dash</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</button>
+</nav>
+
+<script>
+    // Initialize Vanta Globe
+    VANTA.GLOBE({
+        el: "#vanta-globe",
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        minHeight: 200.00,
+        minWidth: 200.00,
+        scale: 1.00,
+        scaleMobile: 1.00,
+        backgroundColor: 0xf7f9fb,
+        color1: 0x0050cb,
+        color2: 0x0066ff,
+        size: 1.0,
+        speed: 0.6
+    });
+
+    // Interactive Dot Grid Background
+    const dotGrid = document.getElementById('dot-grid');
+    const dotSize = 40;
+    const dots = [];
+    
+    function createDotGrid() {
+        dotGrid.innerHTML = '';
+        dots.length = 0;
+        
+        const cols = Math.ceil(window.innerWidth / dotSize) + 1;
+        const rows = Math.ceil(window.innerHeight / dotSize) + 1;
+        
+        for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < rows; j++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                dot.style.left = (i * dotSize) + 'px';
+                dot.style.top = (j * dotSize) + 'px';
+                dotGrid.appendChild(dot);
+                dots.push({
+                    element: dot,
+                    x: i * dotSize,
+                    y: j * dotSize,
+                    active: false
+                });
+            }
+        }
+    }
+    
+    // Initialize dot grid
+    createDotGrid();
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        createDotGrid();
+    });
+    
+    // Mouse movement to activate nearby dots
+    document.addEventListener('mousemove', (e) => {
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+        const activationRadius = 80;
+        
+        dots.forEach(dot => {
+            const distance = Math.sqrt(
+                Math.pow(dot.x - mouseX, 2) + Math.pow(dot.y - mouseY, 2)
+            );
+            
+            if (distance < activationRadius) {
+                dot.element.classList.add('active');
+                dot.active = true;
+            } else {
+                dot.element.classList.remove('active');
+                dot.active = false;
+            }
+        });
+    });
+    
+    // Deactivate dots when mouse leaves
+    document.addEventListener('mouseleave', () => {
+        dots.forEach(dot => {
+            dot.element.classList.remove('active');
+            dot.active = false;
+        });
+    });
+
+    // Ensure cursor is always normal
+    document.addEventListener('mousemove', () => {
+        document.body.style.cursor = 'auto';
+    });
+</script>
+</body></html>

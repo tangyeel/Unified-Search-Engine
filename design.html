@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TracePath | Precision Data Observatory</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0f;
+            color: #e4e1e9;
+            margin: 0;
+            overflow: hidden;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: linear-gradient(135deg, rgba(53, 52, 58, 0.4) 0%, rgba(14, 14, 19, 0.1) 100%);
+            backdrop-filter: blur(12px);
+        }
+        .inner-glow {
+            box-shadow: inset 2px 2px 0px 0px rgba(208, 188, 255, 0.15);
+        }
+        .ambient-violet {
+            box-shadow: 0 0 60px 10px rgba(139, 92, 246, 0.05);
+        }
+        .trace-line-cyan {
+            filter: drop-shadow(0 4px 6px rgba(76, 215, 246, 0.3));
+        }
+        .trace-line-emerald {
+            filter: drop-shadow(0 4px 6px rgba(69, 223, 164, 0.3));
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-container": "#00a574",
+                      "secondary-fixed-dim": "#4cd7f6",
+                      "on-secondary-container": "#00424e",
+                      "on-primary-fixed": "#23005c",
+                      "tertiary-fixed-dim": "#45dfa4",
+                      "primary": "#d0bcff",
+                      "surface-container-highest": "#35343a",
+                      "on-error": "#690005",
+                      "on-secondary-fixed": "#001f26",
+                      "on-surface": "#e4e1e9",
+                      "tertiary": "#45dfa4",
+                      "on-error-container": "#ffdad6",
+                      "surface-container-high": "#2a292f",
+                      "surface-bright": "#39383e",
+                      "background": "#131318",
+                      "on-tertiary-fixed-variant": "#005137",
+                      "on-tertiary-container": "#003120",
+                      "primary-fixed": "#e9ddff",
+                      "on-tertiary": "#003825",
+                      "error-container": "#93000a",
+                      "outline": "#958ea0",
+                      "on-primary-container": "#340080",
+                      "error": "#ffb4ab",
+                      "surface-container-low": "#1b1b20",
+                      "surface-container": "#1f1f25",
+                      "surface-container-lowest": "#0e0e13",
+                      "primary-fixed-dim": "#d0bcff",
+                      "surface-tint": "#d0bcff",
+                      "on-secondary-fixed-variant": "#004e5c",
+                      "on-surface-variant": "#cbc3d7",
+                      "tertiary-fixed": "#68fcbf",
+                      "on-background": "#e4e1e9",
+                      "on-primary-fixed-variant": "#5516be",
+                      "on-secondary": "#003640",
+                      "inverse-primary": "#6d3bd7",
+                      "secondary": "#4cd7f6",
+                      "inverse-on-surface": "#303036",
+                      "secondary-container": "#03b5d3",
+                      "primary-container": "#a078ff",
+                      "secondary-fixed": "#acedff",
+                      "on-primary": "#3c0091",
+                      "inverse-surface": "#e4e1e9",
+                      "on-tertiary-fixed": "#002114",
+                      "outline-variant": "#494454",
+                      "surface-variant": "#35343a",
+                      "surface": "#131318",
+                      "surface-dim": "#131318"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "fontFamily": {
+                      "headline": ["Inter"],
+                      "body": ["Inter"],
+                      "label": ["Inter"]
+              }
+            },
+          }
+        }
+      </script>
+</head>
+<body class="bg-slate-950 text-on-surface selection:bg-primary/30 h-screen flex">
+<!-- SideNavBar (Left) -->
+<aside class="h-screen w-20 hover:w-64 transition-all duration-300 border-r border-white/5 bg-slate-950/40 backdrop-blur-xl shadow-[20px_0_50px_rgba(139,92,246,0.05)] flex flex-col py-8 px-4 group z-50">
+<div class="flex items-center gap-4 mb-12 px-2 overflow-hidden whitespace-nowrap">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-primary font-bold" style="font-variation-settings: 'FILL' 1;">hub</span>
+</div>
+<div class="flex flex-col opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+<span class="text-xl font-black text-violet-400 tracking-tighter">TracePath</span>
+<span class="text-[10px] font-medium uppercase tracking-[0.2em] text-slate-500">Precision Data</span>
+</div>
+</div>
+<nav class="flex-1 flex flex-col gap-2">
+<!-- Active: Dashboard -->
+<a class="flex items-center gap-4 p-3 text-violet-400 bg-violet-400/10 rounded-xl scale-95 active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined shrink-0" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-['Inter'] tracking-tight opacity-0 group-hover:opacity-100 transition-opacity">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 p-3 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-xl scale-95 active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined shrink-0">query_stats</span>
+<span class="font-['Inter'] tracking-tight opacity-0 group-hover:opacity-100 transition-opacity">Analytics</span>
+</a>
+<a class="flex items-center gap-4 p-3 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-xl scale-95 active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined shrink-0">hub</span>
+<span class="font-['Inter'] tracking-tight opacity-0 group-hover:opacity-100 transition-opacity">Nodes</span>
+</a>
+<a class="flex items-center gap-4 p-3 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-xl scale-95 active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined shrink-0">terminal</span>
+<span class="font-['Inter'] tracking-tight opacity-0 group-hover:opacity-100 transition-opacity">Logs</span>
+</a>
+</nav>
+<div class="mt-auto pt-8 flex flex-col gap-2">
+<a class="flex items-center gap-4 p-3 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-xl scale-95 active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined shrink-0">settings</span>
+<span class="font-['Inter'] tracking-tight opacity-0 group-hover:opacity-100 transition-opacity">Settings</span>
+</a>
+<div class="mt-4 p-3 rounded-xl bg-primary/10 border border-primary/20 opacity-0 group-hover:opacity-100 transition-opacity overflow-hidden">
+<p class="text-[10px] font-bold text-primary uppercase mb-2">Pro Plan</p>
+<button class="w-full py-2 bg-primary text-on-primary text-[10px] font-black uppercase tracking-widest rounded-lg">Upgrade Plan</button>
+</div>
+</div>
+</aside>
+<!-- Main Content Wrapper -->
+<main class="flex-1 flex flex-col relative overflow-hidden">
+<!-- TopNavBar -->
+<header class="flex items-center justify-between px-8 w-full h-20 bg-slate-950/20 backdrop-blur-md z-40">
+<div class="flex-1 max-w-2xl">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-cyan-400 transition-colors">search</span>
+<input class="w-full bg-slate-900/40 border border-white/5 rounded-full py-2.5 pl-12 pr-4 text-sm focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-400/50 outline-none transition-all placeholder:text-slate-600" placeholder="Unified Search for Nodes, Repos, or Docs..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6 ml-8">
+<div class="flex items-center gap-4">
+<button class="text-slate-400 hover:text-cyan-400 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-slate-400 hover:text-cyan-400 transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+</div>
+<div class="h-8 w-[1px] bg-white/10"></div>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none">System Admin</p>
+<p class="text-xs font-medium text-slate-200">Alex Sterling</p>
+</div>
+<img alt="User profile" class="w-10 h-10 rounded-full border-2 border-primary/20 object-cover" data-alt="Close-up portrait of a professional man in a dark turtleneck against a dark atmospheric studio background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBITE9GkAnmw927GMPuyED2SRPLAKbcl_dNlNfH6HmDltk8j4L_huPas2gXvla7CdHfJwnYMLtHq-TRpOd5TOme7nwkiOmz67cTZiG4OtTys2cePoDi61hNEKTm8igBZZTh_Yfeu_mL19-mL4neMnV7nm2K1RwPUXDKr741YU5BSP7w6yzClDzF0T1zgz0tCyTuSUJ4pM1HsXY8NDzBI8He49BiUe93IwqX6MCg13beiKj9FZG6USsnY4V6H9aE8vv1NApMnxRSPycH"/>
+</div>
+</div>
+</header>
+<!-- Scrollable Canvas -->
+<div class="flex-1 overflow-y-auto p-8 space-y-8 scroll-smooth">
+<!-- Hero Stats Row -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+<!-- Stat Card 1 -->
+<div class="glass-panel inner-glow p-6 rounded-xl border border-white/5 relative overflow-hidden">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Total Nodes</p>
+<h3 class="text-3xl font-black text-on-surface tracking-tighter">14,204</h3>
+</div>
+<div class="p-2 bg-violet-400/10 rounded-lg text-violet-400">
+<span class="material-symbols-outlined">hub</span>
+</div>
+</div>
+<div class="h-12 w-full flex items-end gap-1">
+<div class="flex-1 bg-violet-400/20 rounded-t-sm h-[40%]"></div>
+<div class="flex-1 bg-violet-400/40 rounded-t-sm h-[60%]"></div>
+<div class="flex-1 bg-violet-400/20 rounded-t-sm h-[30%]"></div>
+<div class="flex-1 bg-violet-400/60 rounded-t-sm h-[80%]"></div>
+<div class="flex-1 bg-violet-400/30 rounded-t-sm h-[50%]"></div>
+<div class="flex-1 bg-violet-400/80 rounded-t-sm h-[95%]"></div>
+</div>
+</div>
+<!-- Stat Card 2 -->
+<div class="glass-panel inner-glow p-6 rounded-xl border border-white/5 relative overflow-hidden">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Repositories</p>
+<h3 class="text-3xl font-black text-on-surface tracking-tighter">1,282</h3>
+</div>
+<div class="p-2 bg-cyan-400/10 rounded-lg text-cyan-400">
+<span class="material-symbols-outlined">folder_managed</span>
+</div>
+</div>
+<div class="h-12 w-full flex items-end gap-1">
+<div class="flex-1 bg-cyan-400/30 rounded-t-sm h-[60%]"></div>
+<div class="flex-1 bg-cyan-400/20 rounded-t-sm h-[40%]"></div>
+<div class="flex-1 bg-cyan-400/50 rounded-t-sm h-[70%]"></div>
+<div class="flex-1 bg-cyan-400/30 rounded-t-sm h-[50%]"></div>
+<div class="flex-1 bg-cyan-400/80 rounded-t-sm h-[90%]"></div>
+<div class="flex-1 bg-cyan-400/40 rounded-t-sm h-[60%]"></div>
+</div>
+</div>
+<!-- Stat Card 3 -->
+<div class="glass-panel inner-glow p-6 rounded-xl border border-white/5 relative overflow-hidden">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Issues Tracked</p>
+<h3 class="text-3xl font-black text-on-surface tracking-tighter">492</h3>
+</div>
+<div class="p-2 bg-emerald-400/10 rounded-lg text-emerald-400">
+<span class="material-symbols-outlined">bug_report</span>
+</div>
+</div>
+<div class="h-12 w-full flex items-end gap-1">
+<div class="flex-1 bg-emerald-400/20 rounded-t-sm h-[20%]"></div>
+<div class="flex-1 bg-emerald-400/50 rounded-t-sm h-[45%]"></div>
+<div class="flex-1 bg-emerald-400/30 rounded-t-sm h-[35%]"></div>
+<div class="flex-1 bg-emerald-400/70 rounded-t-sm h-[60%]"></div>
+<div class="flex-1 bg-emerald-400/40 rounded-t-sm h-[40%]"></div>
+<div class="flex-1 bg-emerald-400/90 rounded-t-sm h-[85%]"></div>
+</div>
+</div>
+<!-- Stat Card 4 -->
+<div class="glass-panel inner-glow p-6 rounded-xl border border-white/5 relative overflow-hidden">
+<div class="flex justify-between items-start mb-4">
+<div>
+<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Local Docs</p>
+<h3 class="text-3xl font-black text-on-surface tracking-tighter">8.4k</h3>
+</div>
+<div class="p-2 bg-pink-400/10 rounded-lg text-pink-400">
+<span class="material-symbols-outlined">description</span>
+</div>
+</div>
+<div class="h-12 w-full flex items-end gap-1">
+<div class="flex-1 bg-pink-400/20 rounded-t-sm h-[50%]"></div>
+<div class="flex-1 bg-pink-400/40 rounded-t-sm h-[70%]"></div>
+<div class="flex-1 bg-pink-400/30 rounded-t-sm h-[40%]"></div>
+<div class="flex-1 bg-pink-400/60 rounded-t-sm h-[80%]"></div>
+<div class="flex-1 bg-pink-400/20 rounded-t-sm h-[30%]"></div>
+<div class="flex-1 bg-pink-400/80 rounded-t-sm h-[90%]"></div>
+</div>
+</div>
+</div>
+<!-- Main Interactive Graph Panel -->
+<section class="glass-panel rounded-2xl border border-white/5 inner-glow relative aspect-video md:aspect-auto md:h-[600px] flex flex-col overflow-hidden ambient-violet">
+<div class="absolute inset-0 z-0 opacity-40">
+<!-- Abstract Background Pattern representing a graph -->
+<svg class="w-full h-full" viewbox="0 0 800 600">
+<defs>
+<lineargradient id="lineGrad" x1="0%" x2="100%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#8b5cf6"></stop>
+<stop offset="50%" stop-color="#06b6d4"></stop>
+<stop offset="100%" stop-color="#34d399"></stop>
+</lineargradient>
+</defs>
+<!-- Lines -->
+<path class="opacity-50" d="M100,100 L300,200 M300,200 L500,150 M300,200 L400,400 M400,400 L600,350 M600,350 L700,500 M500,150 L650,100" fill="none" stroke="url(#lineGrad)" stroke-width="2"></path>
+<!-- Nodes -->
+<circle cx="100" cy="100" fill="#8b5cf6" r="6"></circle>
+<circle cx="300" cy="200" fill="#d0bcff" r="8"></circle>
+<circle cx="500" cy="150" fill="#4cd7f6" r="5"></circle>
+<circle cx="400" cy="400" fill="#06b6d4" r="10"></circle>
+<circle cx="600" cy="350" fill="#34d399" r="7"></circle>
+<circle cx="700" cy="500" fill="#45dfa4" r="12"></circle>
+<circle cx="650" cy="100" fill="#ffb4ab" r="4"></circle>
+</svg>
+</div>
+<div class="relative z-10 p-8 flex justify-between items-start pointer-events-none">
+<div>
+<h2 class="text-4xl font-black text-on-surface tracking-tighter mb-2">Network Architecture</h2>
+<p class="text-on-surface-variant max-w-md">Visualizing 4,200+ interdependencies across production nodes and active development repositories.</p>
+</div>
+<div class="flex gap-4 pointer-events-auto">
+<button class="bg-surface-container-high/60 backdrop-blur p-2 rounded-xl border border-white/10 text-on-surface hover:bg-surface-bright transition-colors">
+<span class="material-symbols-outlined">zoom_in</span>
+</button>
+<button class="bg-surface-container-high/60 backdrop-blur p-2 rounded-xl border border-white/10 text-on-surface hover:bg-surface-bright transition-colors">
+<span class="material-symbols-outlined">filter_center_focus</span>
+</button>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-xl font-bold uppercase tracking-widest text-xs flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">auto_graph</span>
+                            Refine Graph
+                        </button>
+</div>
+</div>
+<div class="mt-auto p-8 relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="glass-panel p-4 rounded-xl border border-white/5 flex gap-4 items-center">
+<div class="w-3 h-3 rounded-full bg-violet-400"></div>
+<div>
+<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Active Links</p>
+<p class="text-sm font-bold">12,492 Established</p>
+</div>
+</div>
+<div class="glass-panel p-4 rounded-xl border border-white/5 flex gap-4 items-center">
+<div class="w-3 h-3 rounded-full bg-cyan-400"></div>
+<div>
+<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Sync Speed</p>
+<p class="text-sm font-bold">2.4ms Latency</p>
+</div>
+</div>
+<div class="glass-panel p-4 rounded-xl border border-white/5 flex gap-4 items-center">
+<div class="w-3 h-3 rounded-full bg-emerald-400"></div>
+<div>
+<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Stability</p>
+<p class="text-sm font-bold">99.98% Confidence</p>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- SideNavBar (Right) / Top Experts -->
+<aside class="fixed right-0 top-20 h-[calc(100vh-5rem)] w-72 border-l border-white/5 bg-slate-900/60 backdrop-blur-lg flex flex-col p-6 gap-4 z-30">
+<div class="mb-4">
+<h4 class="text-xs font-bold uppercase tracking-[0.2em] text-slate-200">Top Experts</h4>
+<p class="text-[10px] font-bold text-violet-400 uppercase">Online Now</p>
+</div>
+<div class="space-y-6">
+<!-- Expert 1 -->
+<div class="group cursor-pointer hover:translate-x-[-4px] transition-transform">
+<div class="flex items-center gap-3 mb-2">
+<div class="relative">
+<img alt="Sarah Chen" class="w-10 h-10 rounded-full border border-cyan-400/30 object-cover" data-alt="Portrait of an Asian female software engineer wearing glasses, professional lighting, corporate look" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBrHVymQqur05HVDr7kOcLlVTfRiSBiADBdaa-6wgHsCqmGagWxYyWoEnwHvsBrzjIgBKBahZfeFE-FB3StDvKPtY0Is0mV-kqUlqhRuGsSx6yrMcopEE0IL86Qe7MFCMDH_SJDZfH-nhDX4g_k80U7Unlf4J3zygtEK8eK5qj3N-Sw82kGbbE4BBlAN21eS4KU3ng8h5QnjxE33odfDSZueDl_QnaYuJm3M5bbhElMzc1g-M3Su0Wkzrfk9hSN4bkP7P13x3SWlnV_"/>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-slate-900 rounded-full"></div>
+</div>
+<div>
+<p class="text-xs font-bold text-slate-200">Sarah Chen</p>
+<p class="text-[10px] text-slate-500">Knowledge Architect</p>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-[9px] uppercase tracking-tighter text-slate-500 font-bold">
+<span>Relationship</span>
+<span>94%</span>
+</div>
+<div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-cyan-400 w-[94%]"></div>
+</div>
+</div>
+</div>
+<!-- Expert 2 -->
+<div class="group cursor-pointer hover:translate-x-[-4px] transition-transform">
+<div class="flex items-center gap-3 mb-2">
+<div class="relative">
+<img alt="Dr. Aris" class="w-10 h-10 rounded-full border border-violet-400/30 object-cover" data-alt="Modern professional headshot of a middle-aged man with short beard, warm studio lighting, dark background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDeezcpU11QnZ3wWH0hPiQO3NAR0JzTC2y4zZYCra9RhbDI-jVNYIuK7xP6UP4Hz2a9WJl7fmB-72EqQrwJdda1QptOesKoxYqxfVEYvpVF2rAv534jU5NA0PzrcmquMszehSsXV_-hfT_VlPPj9Hcb9tr0UIaC21ZUd6jdJGAJtWO-nv8M4G6fORcnfBb1sbFZqbP_5mHHTRANn5Q-NDeAzBWvsd58sXIiSefXTrPYIyq6WGbOvp8VAXqIaXk5MeSOGvjcmZ3XwGOR"/>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-slate-900 rounded-full"></div>
+</div>
+<div>
+<p class="text-xs font-bold text-slate-200">Dr. Aris</p>
+<p class="text-[10px] text-slate-500">Graph Specialist</p>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-[9px] uppercase tracking-tighter text-slate-500 font-bold">
+<span>Relationship</span>
+<span>82%</span>
+</div>
+<div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-violet-400 w-[82%]"></div>
+</div>
+</div>
+</div>
+<!-- Expert 3 -->
+<div class="group cursor-pointer hover:translate-x-[-4px] transition-transform">
+<div class="flex items-center gap-3 mb-2">
+<div class="relative">
+<img alt="Marcus V." class="w-10 h-10 rounded-full border border-white/10 object-cover" data-alt="Portrait of a black man in a crisp white shirt, clean professional portrait, neutral grey background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCV9xk5N99WPxREceEDeqSekLVOeXEOdiwEGehK1erAemwLnhBoZuOi19mAExXOCGalKxWCTR3gjj1krWgukwouUGIvusAwtTpkDi5oAoAObd-aMd7vz-77tz6Wr3zEhvEnopWzL6Alc65TTJP8sBgCP5Sr5BT18L1ynlN3yynO9P7kbWA5uykVE5lyka_WU8XfAewjaLlzS7s4yqJSP7N0aIc97lZGB5b8jOjABJav9tnqnV5nW1CPjkMuLPWBtKlUEB4doXBuxjWq"/>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-slate-600 border-2 border-slate-900 rounded-full"></div>
+</div>
+<div>
+<p class="text-xs font-bold text-slate-200">Marcus V.</p>
+<p class="text-[10px] text-slate-500">Infrastructure</p>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-[9px] uppercase tracking-tighter text-slate-500 font-bold">
+<span>Relationship</span>
+<span>67%</span>
+</div>
+<div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-slate-500 w-[67%]"></div>
+</div>
+</div>
+</div>
+<!-- Expert 4 -->
+<div class="group cursor-pointer hover:translate-x-[-4px] transition-transform">
+<div class="flex items-center gap-3 mb-2">
+<div class="relative">
+<img alt="Elena G." class="w-10 h-10 rounded-full border border-cyan-400/30 object-cover" data-alt="Portrait of a smiling woman with tied back hair, soft natural lighting, blurred garden background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKhRls9nxGr221iuPkaEGagzvbkSzuGacuhwPRv6iXKI-BJvWRFJxPzgoxecfu7PFC62stG9r-f-ZxbBcaDdVb8fGR-Fj-7-JVthtAa-c3dlvmvtonoNLA17G6Jvr8NUbYW4qsyCx7nomPYxoS3CtT8RWh34f7vIAjhP0CzzjubBMQVHrDuXOaqY5IfpH4VjrznUTI9uaKeWkoe8V5HdJmx_7viGpkpF-Iqpzn_ZB_diVq-YvvqCSeqaSqDOatqlEY2P8EYgkr8wXf"/>
+<div class="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-slate-900 rounded-full"></div>
+</div>
+<div>
+<p class="text-xs font-bold text-slate-200">Elena G.</p>
+<p class="text-[10px] text-slate-500">ML Researcher</p>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-[9px] uppercase tracking-tighter text-slate-500 font-bold">
+<span>Relationship</span>
+<span>45%</span>
+</div>
+<div class="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+<div class="h-full bg-cyan-400 w-[45%]"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-auto">
+<div class="glass-panel p-4 rounded-xl border border-white/5 mb-4">
+<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Quick Action</p>
+<button class="w-full py-3 bg-white/5 border border-white/10 text-xs font-bold rounded-lg hover:bg-white/10 transition-colors">Consult Expert</button>
+</div>
+<div class="p-2 text-center">
+<p class="text-[9px] text-slate-600 font-bold uppercase tracking-[0.2em]">TracePath Observer v4.2.0</p>
+</div>
+</div>
+</aside>
+</body></html>

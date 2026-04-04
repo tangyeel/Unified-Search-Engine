@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TracePath | Search Results</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.globe.min.js"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-container": "#fff6f4",
+                        "outline-variant": "#c2c6d8",
+                        "surface-container-low": "#f2f4f6",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#f8f7ff",
+                        "surface-container-highest": "#e0e3e5",
+                        "secondary-fixed": "#d3e4fe",
+                        "on-background": "#191c1e",
+                        "primary-fixed": "#dae1ff",
+                        "inverse-primary": "#b3c5ff",
+                        "on-primary-fixed-variant": "#003fa4",
+                        "primary-fixed-dim": "#b3c5ff",
+                        "surface-container": "#eceef0",
+                        "surface-tint": "#0054d6",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "on-error-container": "#93000a",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-variant": "#e0e3e5",
+                        "on-primary": "#ffffff",
+                        "secondary": "#505f76",
+                        "on-secondary-fixed": "#0b1c30",
+                        "on-surface-variant": "#424656",
+                        "secondary-container": "#d0e1fb",
+                        "on-tertiary-fixed-variant": "#832600",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-container": "#54647a",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed": "#001849",
+                        "surface-container-high": "#e6e8ea",
+                        "on-error": "#ffffff",
+                        "on-surface": "#191c1e",
+                        "background": "#f7f9fb",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary-fixed": "#390c00",
+                        "surface": "#f7f9fb",
+                        "inverse-surface": "#2d3133",
+                        "tertiary-fixed": "#ffdbd0",
+                        "tertiary-fixed-dim": "#ffb59d",
+                        "outline": "#727687",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "tertiary": "#a33200",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#0050cb",
+                        "tertiary-container": "#cc4204",
+                        "surface-dim": "#d8dadc",
+                        "primary-container": "#0066ff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        * {
+            cursor: auto !important;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif;
+            cursor: auto;
+        }
+
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* Interactive Dot Grid Background */
+        #dot-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.12);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+        }
+        
+        .dot.active {
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.6), 0 0 24px rgba(0, 80, 203, 0.3);
+            transform: scale(1.3);
+        }
+
+        /* Vanta Globe Container */
+        #vanta-globe {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .glass-header {
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+
+        /* Smooth animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Sidebar animation */
+        aside {
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+        /* Header animation */
+        header {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Filter section animation */
+        .filter-section {
+            animation: slideInLeft 0.6s ease-out 0.1s both;
+        }
+
+        /* Results section animation */
+        .results-section {
+            animation: fadeInUp 0.6s ease-out 0.1s both;
+        }
+
+        /* Result cards animation */
+        article {
+            animation: fadeInUp 0.6s ease-out;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        article:nth-child(1) {
+            animation-delay: 0.2s;
+        }
+
+        article:nth-child(2) {
+            animation-delay: 0.3s;
+        }
+
+        article:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        article:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 12px 24px rgba(0, 80, 203, 0.15);
+        }
+
+        /* Enhanced button interactions */
+        button {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left 0.5s ease;
+            z-index: -1;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        /* Main content overlay */
+        main {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Filter buttons animation */
+        .filter-btn {
+            animation: fadeInScale 0.5s ease-out;
+        }
+
+        .filter-btn:nth-child(1) {
+            animation-delay: 0.1s;
+        }
+
+        .filter-btn:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+
+        .filter-btn:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .filter-btn:nth-child(4) {
+            animation-delay: 0.25s;
+        }
+
+        .filter-btn:nth-child(5) {
+            animation-delay: 0.3s;
+        }
+
+        /* Load more button animation */
+        .load-more-btn {
+            animation: fadeInUp 0.6s ease-out 0.5s both;
+        }
+
+        /* Bottom nav animation */
+        nav {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Smooth transitions for interactive elements */
+        a, button, label {
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+</style>
+</head>
+<body class="bg-surface text-on-surface flex min-h-screen">
+<!-- Interactive Dot Grid Background -->
+<div id="dot-grid"></div>
+
+<!-- Vanta Globe Background -->
+<div id="vanta-globe"></div>
+
+<!-- SideNavBar (Shared Component) -->
+<aside class="hidden md:flex flex-col h-screen w-64 rounded-r-3xl bg-slate-50 dark:bg-slate-950 p-4 gap-2 sticky top-0 z-40">
+<div class="px-4 py-6 mb-4">
+<h1 class="text-lg font-black text-blue-600" style="">TracePath</h1>
+<p class="text-xs text-secondary font-medium uppercase tracking-wider" style="">Premium </p>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all font-inter text-sm rounded-xl" href="#" style="">
+<span class="material-symbols-outlined" data-icon="home" style="">home</span>
+                Home
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-900 text-blue-600 shadow-sm rounded-xl font-semibold font-inter text-sm" href="#" style="">
+<span class="material-symbols-outlined" data-icon="search" style="">search</span>
+                Search
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all font-inter text-sm rounded-xl" href="#" style="">
+<span class="material-symbols-outlined" data-icon="folder_special" style="">folder_special</span>
+                Collections
+            </a><a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all font-inter text-sm rounded-xl" href="#" style="">
+<span class="material-symbols-outlined" data-icon="hub" style="">hub</span>
+                Mind Map
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all font-inter text-sm rounded-xl" href="#" style="">
+<span class="material-symbols-outlined" data-icon="dashboard" style="">dashboard</span>
+                Dashboard
+            </a>
+</nav>
+<div class="mt-8 px-4">
+<button class="w-full py-3 px-4 bg-gradient-to-br from-primary to-primary-container text-white rounded-xl font-semibold text-sm shadow-md hover:shadow-lg transition-all active:scale-95" style="">
+                Upload File
+            </button>
+</div>
+<div class="mt-auto flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all font-inter text-sm rounded-xl" href="#" style="">
+<span class="material-symbols-outlined" data-icon="help" style="">help</span>
+                Help
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all font-inter text-sm rounded-xl" href="#" style="">
+<span class="material-symbols-outlined" data-icon="logout" style="">logout</span>
+                Logout
+            </a>
+</div>
+</aside>
+
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col min-w-0">
+<!-- TopAppBar (Shared Component) -->
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-sm docked full-width top-0 sticky z-50 flex justify-between items-center w-full px-6 py-3">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-xl">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" data-icon="search" style="">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search documents, authors, or topics..." type="text" value="Project Alpha"/>
+</div>
+</div>
+<div class="flex items-center gap-4 ml-6">
+<button class="text-slate-500 hover:text-blue-500 transition-colors" style="">
+<span class="material-symbols-outlined" data-icon="notifications" style="">notifications</span>
+</button>
+<button class="text-slate-500 hover:text-blue-500 transition-colors" style="">
+<span class="material-symbols-outlined" data-icon="settings" style="">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-slate-200 overflow-hidden border border-outline-variant/20">
+<img alt="Professional user profile" class="h-full w-full object-cover" data-alt="Close-up portrait of a professional woman in a business suit smiling slightly in a bright office setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEsuL6Z-SMbjDoZX-YHGeUVY74zMSfMUTZoNUd4LcETLcmlZARZ_PxLibuazhddp8942A_JbUI_6nsgO9YujYx62TbNJ3_qrPRVO9f84ytJvhPY3DfpUYW96hYHQ_5jLp5RPyAYANMG-ejF0paPT6qbcU0dlkyu9T7MVwKI3Hzb4F9cDHCYQqFFkbPbtpOy-eyehWIUiXjmM5KyJvHBltiKanflf3026DfR4hOqZU1UONAwt5gS75UupuxVQ-l2oQPxgLIlrfPiw" style=""/>
+</div>
+</div>
+</header>
+
+<div class="flex-1 p-6 md:p-10 flex flex-col md:flex-row gap-10">
+<!-- Creative Filters Sidebar -->
+<section class="filter-section w-full md:w-72 flex flex-col gap-8">
+<div>
+<h3 class="text-sm font-bold text-on-surface mb-4 font-headline uppercase tracking-widest" style="">File Types</h3>
+<div class="flex flex-wrap gap-2">
+<button class="filter-btn px-4 py-2 bg-primary text-white rounded-full text-xs font-semibold shadow-sm transition-all" style="">All</button>
+<button class="filter-btn px-4 py-2 bg-surface-container-high text-secondary rounded-full text-xs font-semibold hover:bg-surface-container-highest transition-all" style="">DOCX</button>
+<button class="filter-btn px-4 py-2 bg-surface-container-high text-secondary rounded-full text-xs font-semibold hover:bg-surface-container-highest transition-all" style="">Excel</button>
+<button class="filter-btn px-4 py-2 bg-surface-container-high text-secondary rounded-full text-xs font-semibold hover:bg-surface-container-highest transition-all" style="">PDF</button>
+<button class="filter-btn px-4 py-2 bg-surface-container-high text-secondary rounded-full text-xs font-semibold hover:bg-surface-container-highest transition-all" style="">PPTX</button>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-sm font-bold text-on-surface font-headline uppercase tracking-widest" style="">Last Modified</h3>
+<span class="text-[10px] font-bold text-primary bg-primary-fixed px-2 py-0.5 rounded-full" style="">90 Days</span>
+</div>
+<div class="px-2">
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full relative">
+<div class="absolute left-0 top-0 h-full w-2/3 bg-primary rounded-full"></div>
+<div class="absolute left-2/3 top-1/2 -translate-y-1/2 h-4 w-4 bg-white border-2 border-primary rounded-full shadow-md"></div>
+</div>
+<div class="flex justify-between mt-3 text-[10px] text-secondary font-medium">
+<span class="" style="">Anytime</span>
+<span class="" style="">Today</span>
+</div>
+</div>
+</div>
+<div class="pt-6 border-t border-outline-variant/10">
+<h3 class="text-sm font-bold text-on-surface mb-4 font-headline uppercase tracking-widest" style="">Author</h3>
+<div class="space-y-3">
+<label class="flex items-center gap-3 cursor-pointer group" style="">
+<div class="w-4 h-4 rounded border border-outline group-hover:border-primary transition-colors"></div>
+<span class="text-sm text-secondary group-hover:text-on-surface transition-colors" style="">Sarah Jenkins</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group" style="">
+<div class="w-4 h-4 rounded border border-outline group-hover:border-primary transition-colors"></div>
+<span class="text-sm text-secondary group-hover:text-on-surface transition-colors" style="">Marcus Chen</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group" style="">
+<div class="w-4 h-4 rounded border border-outline group-hover:border-primary transition-colors"></div>
+<span class="text-sm text-secondary group-hover:text-on-surface transition-colors" style="">Elena Rodriguez</span>
+</label>
+</div>
+</div>
+</section>
+
+<!-- Results List -->
+<section class="results-section flex-1 flex flex-col gap-6">
+<div>
+<h2 class="text-2xl font-extrabold font-headline text-on-surface" style="">32 Results for "Project Alpha"</h2>
+<p class="text-sm text-secondary mt-1" style="">Discovering intellectual assets across your workspace.</p>
+</div>
+<div class="flex items-center gap-2 text-xs font-semibold text-secondary">
+<span class="" style="">Sort by:</span>
+<button class="flex items-center gap-1 text-on-surface" style="">Relevance <span class="material-symbols-outlined text-sm" data-icon="expand_more" style="">expand_more</span></button>
+</div>
+
+<!-- Result Card 1 -->
+<article class="bg-surface-container-lowest p-6 rounded-3xl shadow-sm border border-transparent hover:border-outline-variant/15 transition-all group cursor-pointer">
+<div class="flex gap-5">
+<div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-blue-600 text-3xl" data-icon="description" style='font-variation-settings: "FILL" 1;'>description</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<h3 class="text-lg font-bold text-on-surface group-hover:text-primary transition-colors truncate pr-4 font-headline" style="">Project Alpha - Final Q4 Strategy Deployment.docx</h3>
+<button class="text-secondary hover:text-on-surface transition-colors" style="">
+<span class="material-symbols-outlined" data-icon="more_vert" style="">more_vert</span>
+</button>
+</div>
+<p class="text-sm text-secondary mt-2 line-clamp-2 leading-relaxed" style="">
+                                This document outlines the strategic pivot for the Alpha division, focusing on aggressive market expansion and new digital curation protocols. Key stakeholders include Jenkins and Chen...
+                            </p>
+<div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="person" style="">person</span>
+<span class="text-xs font-medium text-secondary" style="">Sarah Jenkins</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="database" style="">database</span>
+<span class="text-xs font-medium text-secondary" style="">2.4MB</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="calendar_today" style="">calendar_today</span>
+<span class="text-xs font-medium text-secondary" style="">Modified 2 days ago</span>
+</div>
+</div>
+</div>
+</div>
+</article>
+
+<!-- Result Card 2 -->
+<article class="bg-surface-container-lowest p-6 rounded-3xl shadow-sm border border-transparent hover:border-outline-variant/15 transition-all group cursor-pointer">
+<div class="flex gap-5">
+<div class="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-green-600 text-3xl" data-icon="table_chart" style='font-variation-settings: "FILL" 1;'>table_chart</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<h3 class="text-lg font-bold text-on-surface group-hover:text-primary transition-colors truncate pr-4 font-headline" style="">Alpha_Budget_Projections_2024.xlsx</h3>
+<button class="text-secondary hover:text-on-surface transition-colors" style="">
+<span class="material-symbols-outlined" data-icon="more_vert" style="">more_vert</span>
+</button>
+</div>
+<p class="text-sm text-secondary mt-2 line-clamp-2 leading-relaxed" style="">
+                                Detailed financial breakdown of operational expenses for Project Alpha. Includes quarterly forecasts, resource allocation, and variance analysis for the international branch.
+                            </p>
+<div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="person" style="">person</span>
+<span class="text-xs font-medium text-secondary" style="">Marcus Chen</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="database" style="">database</span>
+<span class="text-xs font-medium text-secondary" style="">1.8MB</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="calendar_today" style="">calendar_today</span>
+<span class="text-xs font-medium text-secondary" style="">Modified 1 week ago</span>
+</div>
+</div>
+</div>
+</div>
+</article>
+
+<!-- Result Card 3 -->
+<article class="bg-surface-container-lowest p-6 rounded-3xl shadow-sm border border-transparent hover:border-outline-variant/15 transition-all group cursor-pointer">
+<div class="flex gap-5">
+<div class="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-red-600 text-3xl" data-icon="picture_as_pdf" style='font-variation-settings: "FILL" 1;'>picture_as_pdf</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<h3 class="text-lg font-bold text-on-surface group-hover:text-primary transition-colors truncate pr-4 font-headline" style="">Executive Summary - Project Alpha Compliance.pdf</h3>
+<button class="text-secondary hover:text-on-surface transition-colors" style="">
+<span class="material-symbols-outlined" data-icon="more_vert" style="">more_vert</span>
+</button>
+</div>
+<p class="text-sm text-secondary mt-2 line-clamp-2 leading-relaxed" style="">
+                                Legal compliance review for Project Alpha's European expansion. This document contains sensitive regulatory information and data protection guidelines.
+                            </p>
+<div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="person" style="">person</span>
+<span class="text-xs font-medium text-secondary" style="">Legal Dept</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="database" style="">database</span>
+<span class="text-xs font-medium text-secondary" style="">4.2MB</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline" data-icon="calendar_today" style="">calendar_today</span>
+<span class="text-xs font-medium text-secondary" style="">Modified Oct 12, 2023</span>
+</div>
+</div>
+</div>
+</div>
+</article>
+
+<!-- Load More / Pagination Asymmetric Layout -->
+<div class="flex items-center justify-center py-10">
+<button class="load-more-btn group flex items-center gap-3 px-8 py-4 bg-surface-container text-on-surface font-bold rounded-2xl hover:bg-surface-container-highest transition-all" style="">
+<span class="" style="">Load more discoveries</span>
+<span class="material-symbols-outlined group-hover:translate-y-1 transition-transform" data-icon="arrow_downward" style="">arrow_downward</span>
+</button>
+</div>
+</section>
+</div>
+</main>
+
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-outline-variant/10 flex justify-around items-center py-3 px-6 z-50">
+<button class="flex flex-col items-center gap-1 text-secondary" style="">
+<span class="material-symbols-outlined" data-icon="home" style="">home</span>
+<span class="text-[10px] font-bold" style="">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-primary" style="">
+<span class="material-symbols-outlined" data-icon="search" style='font-variation-settings: "FILL" 1;'>search</span>
+<span class="text-[10px] font-bold" style="">Search</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-secondary" style="">
+<span class="material-symbols-outlined" data-icon="folder_special" style="">folder_special</span>
+<span class="text-[10px] font-bold" style="">Files</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-secondary" style="">
+<span class="material-symbols-outlined" data-icon="person" style="">person</span>
+<span class="text-[10px] font-bold" style="">Profile</span>
+</button>
+</nav>
+
+<script>
+    // Initialize Vanta Globe
+    VANTA.GLOBE({
+        el: "#vanta-globe",
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        minHeight: 200.00,
+        minWidth: 200.00,
+        scale: 1.00,
+        scaleMobile: 1.00,
+        backgroundColor: 0xf7f9fb,
+        color1: 0x0050cb,
+        color2: 0x0066ff,
+        size: 1.0,
+        speed: 0.6
+    });
+
+    // Interactive Dot Grid Background
+    const dotGrid = document.getElementById('dot-grid');
+    const dotSize = 40;
+    const dots = [];
+    
+    function createDotGrid() {
+        dotGrid.innerHTML = '';
+        dots.length = 0;
+        
+        const cols = Math.ceil(window.innerWidth / dotSize) + 1;
+        const rows = Math.ceil(window.innerHeight / dotSize) + 1;
+        
+        for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < rows; j++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                dot.style.left = (i * dotSize) + 'px';
+                dot.style.top = (j * dotSize) + 'px';
+                dotGrid.appendChild(dot);
+                dots.push({
+                    element: dot,
+                    x: i * dotSize,
+                    y: j * dotSize,
+                    active: false
+                });
+            }
+        }
+    }
+    
+    // Initialize dot grid
+    createDotGrid();
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        createDotGrid();
+    });
+    
+    // Mouse movement to activate nearby dots
+    document.addEventListener('mousemove', (e) => {
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+        const activationRadius = 80;
+        
+        dots.forEach(dot => {
+            const distance = Math.sqrt(
+                Math.pow(dot.x - mouseX, 2) + Math.pow(dot.y - mouseY, 2)
+            );
+            
+            if (distance < activationRadius) {
+                dot.element.classList.add('active');
+                dot.active = true;
+            } else {
+                dot.element.classList.remove('active');
+                dot.active = false;
+            }
+        });
+    });
+    
+    // Deactivate dots when mouse leaves
+    document.addEventListener('mouseleave', () => {
+        dots.forEach(dot => {
+            dot.element.classList.remove('active');
+            dot.active = false;
+        });
+    });
+
+    // Ensure cursor is always normal
+    document.addEventListener('mousemove', () => {
+        document.body.style.cursor = 'auto';
+    });
+</script>
+</body></html>

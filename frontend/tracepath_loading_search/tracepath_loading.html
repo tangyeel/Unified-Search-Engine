@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>TracePath | Curating Your Library</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-dim": "#d8dadc",
+                    "surface-container-highest": "#e0e3e5",
+                    "tertiary-fixed": "#ffdbd0",
+                    "on-surface": "#191c1e",
+                    "on-secondary": "#ffffff",
+                    "tertiary-container": "#cc4204",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-container": "#54647a",
+                    "outline-variant": "#c2c6d8",
+                    "primary": "#0050cb",
+                    "secondary-fixed": "#d3e4fe",
+                    "inverse-on-surface": "#eff1f3",
+                    "surface-tint": "#0054d6",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "on-primary": "#ffffff",
+                    "surface-variant": "#e0e3e5",
+                    "on-secondary-fixed": "#0b1c30",
+                    "on-primary-container": "#f8f7ff",
+                    "surface": "#f7f9fb",
+                    "primary-fixed-dim": "#b3c5ff",
+                    "on-tertiary-container": "#fff6f4",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "primary-fixed": "#dae1ff",
+                    "tertiary-fixed-dim": "#ffb59d",
+                    "outline": "#727687",
+                    "on-tertiary-fixed": "#390c00",
+                    "on-tertiary": "#ffffff",
+                    "background": "#f7f9fb",
+                    "surface-container-low": "#f2f4f6",
+                    "secondary": "#505f76",
+                    "on-surface-variant": "#424656",
+                    "surface-container": "#eceef0",
+                    "secondary-container": "#d0e1fb",
+                    "on-background": "#191c1e",
+                    "on-primary-fixed": "#001849",
+                    "on-primary-fixed-variant": "#003fa4",
+                    "surface-container-high": "#e6e8ea",
+                    "inverse-surface": "#2d3133",
+                    "tertiary": "#a33200",
+                    "error": "#ba1a1a",
+                    "on-error": "#ffffff",
+                    "surface-bright": "#f7f9fb",
+                    "on-tertiary-fixed-variant": "#832600",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#b3c5ff",
+                    "primary-container": "#0066ff",
+                    "error-container": "#ffdad6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "2xl": "1rem",
+                    "3xl": "1.5rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface antialiased overflow-hidden">
+<div class="flex min-h-screen">
+<!-- SideNavBar Component Implementation -->
+<aside class="hidden md:flex flex-col h-screen w-64 rounded-r-3xl bg-slate-50 dark:bg-slate-950 p-4 gap-2 no-border tonal-definition bg-slate-100 z-50">
+<!-- Header Section -->
+<div class="flex items-center gap-3 px-2 py-4 mb-6">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_tree</span>
+</div>
+<div>
+<h1 class="text-xl font-bold text-slate-900 dark:text-white leading-none">TracePath</h1>
+<p class="text-[10px] text-slate-500 font-medium uppercase tracking-widest mt-1">Corporate Finder</p>
+</div>
+</div>
+<!-- Primary Navigation -->
+<nav class="flex flex-col gap-1 flex-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all font-inter text-sm rounded-xl" href="#">
+<span class="material-symbols-outlined">home</span>
+<span>Home</span>
+</a>
+<!-- ACTIVE STATE -->
+<a class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-900 text-blue-600 shadow-sm rounded-xl font-semibold font-inter text-sm transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">search</span>
+<span>Search</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all font-inter text-sm rounded-xl" href="#">
+<span class="material-symbols-outlined">folder_special</span>
+<span>Collections</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all font-inter text-sm rounded-xl" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Dashboard</span>
+</a>
+</nav>
+<!-- CTA -->
+<button class="my-4 mx-2 py-3 px-4 bg-primary text-on-primary rounded-xl font-semibold text-sm shadow-md hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span>
+            New Search
+        </button>
+<!-- Footer Navigation -->
+<div class="flex flex-col gap-1 border-t border-slate-200 pt-4">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 font-inter text-sm rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>Support</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 font-inter text-sm rounded-xl transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span>Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 relative flex flex-col items-center justify-center bg-surface overflow-hidden">
+<!-- Background Atmospheric Depth -->
+<div class="absolute inset-0 z-0 pointer-events-none">
+<div class="absolute top-[-10%] right-[-5%] w-[600px] h-[600px] bg-primary/5 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-[-10%] left-[5%] w-[400px] h-[400px] bg-secondary-container/10 rounded-full blur-[100px]"></div>
+</div>
+<!-- TopAppBar (Mobile Only) -->
+<header class="absolute top-0 left-0 right-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex justify-between items-center w-full px-6 py-4 shadow-sm md:hidden">
+<span class="text-xl font-bold tracking-tight text-blue-700 dark:text-blue-500 font-headline">TracePath</span>
+<div class="flex gap-4">
+<span class="material-symbols-outlined text-slate-500">notifications</span>
+<span class="material-symbols-outlined text-slate-500">settings</span>
+</div>
+</header>
+<!-- Loading Centerpiece -->
+<section class="relative z-10 flex flex-col items-center max-w-xl text-center px-6">
+<!-- Central Animated Asset -->
+<div class="mb-12 relative group">
+<!-- Glassmorphic Container for GIF -->
+<div class="relative z-20 w-64 h-64 md:w-80 md:h-80 bg-surface-container-lowest/40 backdrop-blur-2xl rounded-[3rem] shadow-2xl flex items-center justify-center p-8 overflow-hidden">
+<img alt="Document analysis animation" class="w-full h-full object-contain mix-blend-multiply opacity-90" src="https://lh3.googleusercontent.com/aida/ADBb0ujQk22JPhEuSwpEXAWxHmv4OMrv0DPV9Av-RrtI0d7832tfEouZ-097EQ-yOY1jbNujQsgLBlVDlNDU-OVw960hkrHKZ1i9d10V3O_lDu6-Eu_MCd4vcrdQ0ex7dQC7RHcWlk3UG1JP9Rcm0EnCE8R5RR3wavDMcrozUYhJcVrzFjWYOqRHtmjV3E1cnv73-aqETCfQSC8srSYuhwzXH5PRl-Fi_zHh0ob1_pEhslT-UrC2eJ4qgEyO8bUsh476zo4atoIhoEuu"/>
+</div>
+<!-- Decorative Radial Glow -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] bg-primary/10 rounded-full blur-3xl z-10"></div>
+</div>
+<!-- Messaging -->
+<div class="space-y-4">
+<h2 class="text-3xl md:text-4xl font-headline font-extrabold text-on-surface tracking-tight">
+                    Curating <span class="text-primary italic">redefined</span>...
+                </h2>
+<p class="text-secondary text-base md:text-lg font-body leading-relaxed max-w-md mx-auto">
+                    TracePath is analyzing millions of data points to find exactly what you need. Hang tight while we refine your workspace.
+                </p>
+</div>
+<!-- Animated Progress Indicator -->
+<div class="mt-12 w-full max-w-xs h-1.5 bg-surface-container-high rounded-full overflow-hidden relative">
+<div class="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-primary-container rounded-full w-1/3 animate-[loading_2s_ease-in-out_infinite]"></div>
+</div>
+<style>
+                @keyframes loading {
+                    0% { transform: translateX(-100%); width: 20%; }
+                    50% { transform: translateX(100%); width: 60%; }
+                    100% { transform: translateX(300%); width: 20%; }
+                }
+            </style>
+<!-- Deep Indexing Indicator -->
+<div class="mt-16 flex items-center gap-3 bg-surface-container-lowest/60 backdrop-blur-md px-6 py-3 rounded-full shadow-sm border border-outline-variant/10">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="text-xs font-semibold uppercase tracking-widest text-secondary-fixed-dim font-label">Deep Indexing Active</span>
+</div>
+</section>
+<!-- Bottom Floating Document Traces -->
+<div class="absolute bottom-12 right-12 hidden lg:block opacity-40">
+<div class="flex flex-col gap-4">
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm rotate-6 translate-y-4">
+<span class="material-symbols-outlined text-primary mb-2">description</span>
+<div class="h-2 w-24 bg-surface-container rounded-full"></div>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl shadow-sm -rotate-3 -translate-x-8">
+<span class="material-symbols-outlined text-primary mb-2" style="font-variation-settings: 'FILL' 1;">picture_as_pdf</span>
+<div class="h-2 w-16 bg-surface-container rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl px-6 py-4 flex justify-between items-center z-50 border-t border-slate-100">
+<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-blue-600" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">search</span>
+<span class="text-[10px] font-bold">Search</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined">folder</span>
+<span class="text-[10px] font-medium">Vault</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-slate-500" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-medium">Dashboard</span>
+</a>
+</nav>
+</main>
+</div>
+</body></html>

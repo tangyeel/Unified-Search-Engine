@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>TracePath | Digital Curator</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.globe.min.js"></script>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      "colors": {
+        "on-secondary": "#ffffff",
+        "on-tertiary-container": "#fff6f4",
+        "outline-variant": "#c2c6d8",
+        "surface-container-low": "#f2f4f6",
+        "error": "#ba1a1a",
+        "on-primary-container": "#f8f7ff",
+        "surface-container-highest": "#e0e3e5",
+        "secondary-fixed": "#d3e4fe",
+        "on-background": "#191c1e",
+        "primary-fixed": "#dae1ff",
+        "inverse-primary": "#b3c5ff",
+        "on-primary-fixed-variant": "#003fa4",
+        "primary-fixed-dim": "#b3c5ff",
+        "surface-container": "#eceef0",
+        "surface-tint": "#0054d6",
+        "on-secondary-fixed-variant": "#38485d",
+        "on-error-container": "#93000a",
+        "inverse-on-surface": "#eff1f3",
+        "surface-variant": "#e0e3e5",
+        "on-primary": "#ffffff",
+        "secondary": "#505f76",
+        "on-secondary-fixed": "#0b1c30",
+        "on-surface-variant": "#424656",
+        "secondary-container": "#d0e1fb",
+        "on-tertiary-fixed-variant": "#832600",
+        "surface-container-lowest": "#ffffff",
+        "on-secondary-container": "#54647a",
+        "error-container": "#ffdad6",
+        "on-primary-fixed": "#001849",
+        "surface-container-high": "#e6e8ea",
+        "on-error": "#ffffff",
+        "on-surface": "#191c1e",
+        "background": "#f7f9fb",
+        "surface-bright": "#f7f9fb",
+        "on-tertiary-fixed": "#390c00",
+        "surface": "#f7f9fb",
+        "inverse-surface": "#2d3133",
+        "tertiary-fixed": "#ffdbd0",
+        "tertiary-fixed-dim": "#ffb59d",
+        "outline": "#727687",
+        "secondary-fixed-dim": "#b7c8e1",
+        "tertiary": "#a33200",
+        "on-tertiary": "#ffffff",
+        "primary": "#0050cb",
+        "tertiary-container": "#cc4204",
+        "surface-dim": "#d8dadc",
+        "primary-container": "#0066ff"
+      },
+      "borderRadius": {
+        "DEFAULT": "0.25rem",
+        "lg": "0.5rem",
+        "xl": "1rem",
+        "2xl": "1.5rem",
+        "full": "9999px"
+      },
+      "fontFamily": {
+        "headline": ["Manrope"],
+        "body": ["Inter"],
+        "label": ["Inter"]
+      }
+    },
+  },
+}
+</script>
+<style>
+:root {
+  --accent-pink: #ff4fa3;
+  --accent-pink-soft: #ff9cd0;
+}
+
+* {
+  cursor: auto !important;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  cursor: auto;
+}
+
+.font-manrope { font-family: 'Manrope', sans-serif; }
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Interactive Dot Grid Background */
+#dot-grid {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.2);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+}
+
+.dot.active {
+  background-color: rgba(255, 79, 163, calc(0.18 + (var(--glow, 0) * 0.7)));
+  box-shadow:
+    0 0 calc(10px + (var(--glow, 0) * 18px)) rgba(255, 79, 163, calc(0.2 + (var(--glow, 0) * 0.7))),
+    0 0 calc(18px + (var(--glow, 0) * 26px)) rgba(255, 156, 208, calc(0.15 + (var(--glow, 0) * 0.45)));
+  transform: scale(calc(1 + (var(--glow, 0) * 1.3)));
+}
+
+/* Vanta Globe Container */
+#vanta-globe {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Page Container */
+.page-container {
+  position: relative;
+  z-index: 10;
+}
+
+.page {
+  display: none;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.page.active {
+  display: block;
+  opacity: 1;
+}
+
+/* Smooth animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 79, 163, 0.32), 0 0 40px rgba(255, 79, 163, 0.14);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(255, 79, 163, 0.52), 0 0 60px rgba(255, 79, 163, 0.24);
+  }
+}
+
+@keyframes accentFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+h1 { animation: fadeInUp 0.8s ease-out 0.2s both; }
+.hero-subtitle { animation: fadeInUp 0.8s ease-out 0.4s both; }
+.search-container { animation: fadeInScale 0.8s ease-out 0.6s both; }
+.bento-card { animation: fadeInUp 0.8s ease-out; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.bento-card:nth-child(1) { animation-delay: 0.8s; }
+.bento-card:nth-child(2) { animation-delay: 0.9s; }
+.bento-card:nth-child(3) { animation-delay: 1s; }
+.bento-card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(255, 79, 163, 0.18); }
+
+#home-page h1 {
+  background: linear-gradient(120deg, #1e1e1e 5%, var(--accent-pink) 65%, #ff78bf 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: fadeInUp 0.8s ease-out 0.2s both, accentFloat 4s ease-in-out infinite;
+}
+
+#home-page .search-container button {
+  box-shadow: 0 12px 26px rgba(255, 79, 163, 0.25);
+}
+
+#home-page .search-container button:hover {
+  box-shadow: 0 18px 34px rgba(255, 79, 163, 0.35);
+}
+
+#home-page .recent-tag:hover {
+  border-color: rgba(255, 79, 163, 0.45);
+  box-shadow: 0 8px 16px rgba(255, 79, 163, 0.24);
+}
+
+button {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: left 0.5s ease;
+  z-index: -1;
+}
+
+button:hover::before { left: 100%; }
+
+aside { animation: slideInLeft 0.6s ease-out; }
+nav { animation: fadeInUp 0.6s ease-out; }
+footer { animation: fadeInUp 0.8s ease-out 1.2s both; }
+
+.recent-tag {
+  animation: fadeInUp 0.6s ease-out;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.recent-tag:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0, 80, 203, 0.2); }
+
+.center-node { animation: pulse-glow 3s ease-in-out infinite; }
+.secondary-node { animation: fadeInScale 0.6s ease-out; transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.secondary-node:hover { transform: scale(1.15) !important; filter: drop-shadow(0 10px 20px rgba(0, 80, 203, 0.3)); }
+.sub-node { animation: slideInUp 0.5s ease-out; transition: all 0.3s ease; }
+.sub-node:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0, 80, 203, 0.2) !important; }
+
+.knowledge-graph-line {
+  stroke: #c2c6d8;
+  stroke-width: 1;
+  stroke-dasharray: 4;
+  opacity: 0.5;
+  transition: stroke 0.3s ease, opacity 0.3s ease;
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(24px);
+}
+
+.filter-btn { animation: fadeInScale 0.5s ease-out; }
+.filter-btn:nth-child(1) { animation-delay: 0.1s; }
+.filter-btn:nth-child(2) { animation-delay: 0.15s; }
+.filter-btn:nth-child(3) { animation-delay: 0.2s; }
+.filter-btn:nth-child(4) { animation-delay: 0.25s; }
+.filter-btn:nth-child(5) { animation-delay: 0.3s; }
+
+article {
+  animation: fadeInUp 0.6s ease-out;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+article:nth-child(1) { animation-delay: 0.2s; }
+article:nth-child(2) { animation-delay: 0.3s; }
+article:nth-child(3) { animation-delay: 0.4s; }
+article:hover { transform: translateY(-6px); box-shadow: 0 12px 24px rgba(0, 80, 203, 0.15); }
+
+a, button, label { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+.top-nav-btn {
+  color: #64748b;
+  border-bottom: 2px solid transparent;
+}
+
+.top-nav-btn.is-active {
+  color: #0050cb;
+  border-bottom-color: #0050cb;
+}
+
+.auto-sidebar {
+  width: 16rem;
+  overflow: hidden;
+  transition: width 0.35s ease, padding 0.35s ease;
+}
+
+.auto-sidebar.is-collapsed {
+  width: 5.25rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.sidebar-nav-btn.is-active {
+  background: white;
+  color: #0050cb;
+  box-shadow: 0 4px 12px rgba(0, 80, 203, 0.12);
+  font-weight: 600;
+}
+
+.auto-sidebar.is-collapsed .sidebar-brand-copy,
+.auto-sidebar.is-collapsed .sidebar-label,
+.auto-sidebar.is-collapsed .sidebar-upload-label,
+.auto-sidebar.is-collapsed .sidebar-footer-label {
+  display: none;
+}
+
+.auto-sidebar.is-collapsed .sidebar-brand {
+  justify-content: center;
+}
+
+.auto-sidebar.is-collapsed .sidebar-nav-btn,
+.auto-sidebar.is-collapsed .sidebar-upload-btn,
+.auto-sidebar.is-collapsed .sidebar-footer-btn {
+  justify-content: center;
+}
+
+@media (max-width: 767px) {
+  .auto-sidebar {
+    width: 100%;
+  }
+}
+
+.toast {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 100;
+  background: rgba(25, 28, 30, 0.9);
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+}
+</style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col items-center overflow-x-hidden">
+
+<!-- Interactive Dot Grid Background -->
+<div id="dot-grid"></div>
+
+<!-- Vanta Globe Background -->
+<div id="vanta-globe"></div>
+
+<!-- TopNavBar -->
+<nav class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-sm flex justify-between items-center w-full px-6 py-3 sticky top-0 z-50">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white font-manrope cursor-pointer" onclick="showPage('home')">TracePath</span>
+<div class="hidden md:flex gap-6">
+<button data-page-target="home" onclick="showPage('home')" class="top-nav-btn font-manrope text-sm font-medium hover:text-blue-700 transition-colors">Home</button>
+<button data-page-target="search" onclick="showPage('search')" class="top-nav-btn font-manrope text-sm font-medium hover:text-blue-700 transition-colors">Search</button>
+<button data-page-target="mindmap" onclick="showPage('mindmap')" class="top-nav-btn font-manrope text-sm font-medium hover:text-blue-700 transition-colors">Mind Map</button>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-slate-500 hover:text-blue-600 transition-colors p-2">notifications</button>
+<button class="material-symbols-outlined text-slate-500 hover:text-blue-600 transition-colors p-2">settings</button>
+<div class="w-8 h-8 rounded-full overflow-hidden ml-2 border border-outline-variant/20">
+<img alt="Professional user profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsauq1-z1FnF7jPpHo0kTzKDtO8_Wa_caRNXNTZ_Z1SALJX5k7QbLr5APidAE3xiwan_LjnzDv8mGnES3IU5H2SekKvHWqIrxH7FQPTo7q1hTyso4Lc6ZmoGYNzBfEToDWjWgfpWzJE2dq4aQBkgZmnqf6Q7hJGZ_uyg3NuS4vw-m_MoM4_iseeziCkxzbGFZY-OKtef1zxNQ24CeM1Y04PJCuhxzY8qqkc1OmLpS-CstFUhOk1GOJ1kS-JsR0JpliA2OOHQ1b9g" class="">
+</div>
+</div>
+</nav>
+
+<!-- Page Container -->
+<div class="page-container w-full">
+
+<!-- ============ HOME PAGE ============ -->
+<div id="home-page" class="page active">
+<main class="flex-grow flex flex-col items-center justify-center w-full max-w-5xl px-6 py-12 md:py-24 relative">
+<div class="text-center mb-12 relative z-10">
+<h1 class="font-headline text-5xl md:text-7xl font-extrabold tracking-tight text-on-surface mb-6 opacity-90">TracePath</h1>
+<p class="font-body text-lg text-secondary max-w-xl mx-auto leading-relaxed hero-subtitle">Experience a serene, hyper-intelligent gallery for your information. Search across every folder with precision.</p>
+</div>
+
+<div class="w-full max-w-3xl relative group z-20 search-container">
+<div class="relative z-20 flex items-center bg-surface-container-lowest/80 backdrop-blur-2xl p-2 rounded-2xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] ring-1 ring-outline-variant/15 focus-within:ring-primary/40 transition-all duration-300">
+<span class="material-symbols-outlined ml-4 text-secondary/60">search</span>
+<input class="w-full bg-transparent border-none focus:ring-0 px-4 py-4 text-lg font-body text-on-surface placeholder:text-secondary/40" placeholder="Search your intelligent library..." type="text" value="Q4 Financial Report">
+<button class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-8 py-3 rounded-xl font-headline font-bold text-sm tracking-wide shadow-lg hover:shadow-primary/20 hover:scale-[1.02] transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">bolt</span>CURATE</button>
+</div>
+
+<div class="absolute top-full left-0 right-0 mt-4 bg-surface-container-lowest/90 backdrop-blur-2xl rounded-2xl shadow-xl ring-1 ring-outline-variant/10 overflow-hidden z-10">
+<div class="p-4 space-y-1">
+<div class="flex items-center gap-4 p-3 hover:bg-surface-container-low rounded-xl transition-colors cursor-pointer group/item">
+<div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-600"><span class="material-symbols-outlined">picture_as_pdf</span></div>
+<div class="flex-grow"><p class="font-body text-sm font-semibold text-on-surface">Q4 Financial Report 2023.pdf</p><p class="font-label text-[10px] text-secondary tracking-wider uppercase">Finance / Reports</p></div>
+<span class="material-symbols-outlined text-secondary opacity-0 group-hover/item:opacity-100 transition-opacity">north_west</span>
+</div>
+<div class="flex items-center gap-4 p-3 hover:bg-surface-container-low rounded-xl transition-colors cursor-pointer group/item">
+<div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600"><span class="material-symbols-outlined">description</span></div>
+<div class="flex-grow"><p class="font-body text-sm font-semibold text-on-surface">Q4 Marketing Strategy.docx</p><p class="font-label text-[10px] text-secondary tracking-wider uppercase">Marketing / 2024</p></div>
+<span class="material-symbols-outlined text-secondary opacity-0 group-hover/item:opacity-100 transition-opacity">north_west</span>
+</div>
+<div class="flex items-center gap-4 p-3 hover:bg-surface-container-low rounded-xl transition-colors cursor-pointer group/item">
+<div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600"><span class="material-symbols-outlined">table_chart</span></div>
+<div class="flex-grow"><p class="font-body text-sm font-semibold text-on-surface">Q4 Analytics Dashboard.xlsx</p><p class="font-label text-[10px] text-secondary tracking-wider uppercase">Analytics / Data</p></div>
+<span class="material-symbols-outlined text-secondary opacity-0 group-hover/item:opacity-100 transition-opacity">north_west</span>
+</div>
+</div>
+<div class="bg-surface-container-low/50 px-6 py-3 flex justify-between items-center">
+<span class="font-label text-[11px] text-secondary/70">Press <kbd class="px-1.5 py-0.5 bg-surface-container-highest rounded border border-outline-variant/30 text-[10px]">ESC</kbd> to close</span>
+<span class="font-label text-[11px] text-primary font-semibold cursor-pointer hover:underline">View all results</span>
+</div>
+</div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-16 relative z-10">
+<div class="bento-card md:col-span-1 p-6 rounded-2xl bg-surface-container-low/50 hover:bg-surface-container-lowest hover:shadow-lg transition-all duration-300 group cursor-pointer flex flex-col justify-between h-48 border border-transparent hover:border-outline-variant/10">
+<div class="flex justify-between items-start">
+<div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center"><span class="material-symbols-outlined">cloud_upload</span></div>
+<span class="material-symbols-outlined text-secondary/30 group-hover:text-primary transition-colors">arrow_outward</span>
+</div>
+<div><h3 class="font-headline font-bold text-lg text-on-surface">Upload File</h3><p class="font-body text-xs text-secondary mt-1">Drag and drop or browse documents</p></div>
+</div>
+
+<div class="bento-card md:col-span-2 p-6 rounded-2xl bg-surface-container-low/50 hover:bg-surface-container-lowest hover:shadow-lg transition-all duration-300 border border-transparent hover:border-outline-variant/10">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline font-bold text-lg text-on-surface flex items-center gap-2"><span class="material-symbols-outlined text-primary">history</span>Recent Files</h3>
+<button class="font-label text-xs font-semibold text-primary hover:text-primary-container">See all</button>
+</div>
+<div class="flex flex-wrap gap-3">
+<div class="recent-tag bg-white/80 backdrop-blur-sm px-4 py-2.5 rounded-xl flex items-center gap-3 shadow-sm border border-outline-variant/10 hover:translate-y-[-2px] transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-orange-500 text-sm">draft</span><span class="font-body text-xs font-medium">Brand_Guidelines_v2</span>
+</div>
+<div class="recent-tag bg-white/80 backdrop-blur-sm px-4 py-2.5 rounded-xl flex items-center gap-3 shadow-sm border border-outline-variant/10 hover:translate-y-[-2px] transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-blue-500 text-sm">article</span><span class="font-body text-xs font-medium">Contract_Signed</span>
+</div>
+<div class="recent-tag bg-white/80 backdrop-blur-sm px-4 py-2.5 rounded-xl flex items-center gap-3 shadow-sm border border-outline-variant/10 hover:translate-y-[-2px] transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-purple-500 text-sm">movie</span><span class="font-body text-xs font-medium">Promo_Assets</span>
+</div>
+<div class="recent-tag bg-white/80 backdrop-blur-sm px-4 py-2.5 rounded-xl flex items-center gap-3 shadow-sm border border-outline-variant/10 hover:translate-y-[-2px] transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-emerald-500 text-sm">folder</span><span class="font-body text-xs font-medium">Archive_2023</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+<footer class="w-full max-w-5xl px-6 py-8 flex flex-col md:flex-row justify-between items-center text-secondary/60 relative z-10">
+<div class="flex items-center gap-6 mb-4 md:mb-0">
+<a class="font-label text-xs hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-label text-xs hover:text-primary transition-colors" href="#">Documentation</a>
+<a class="font-label text-xs hover:text-primary transition-colors" href="#">API Status</a>
+</div>
+<p class="font-label text-[10px] uppercase tracking-widest">© 2024 TRACEPATH INTELLIGENT SYSTEMS</p>
+</footer>
+</div>
+
+<!-- ============ MIND MAP PAGE ============ -->
+<div id="mindmap-page" class="page">
+<div class="flex min-h-screen">
+<aside class="auto-sidebar hidden md:flex flex-col h-screen rounded-r-3xl bg-slate-50 dark:bg-slate-950 p-4 gap-2 sticky top-0 z-40">
+<div class="sidebar-brand flex items-center gap-3 px-4 py-6">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white"><span class="material-symbols-outlined">auto_awesome</span></div>
+<div class="sidebar-brand-copy"><h1 class="text-lg font-black text-blue-600">TracePath</h1><p class="text-[10px] text-slate-500 uppercase tracking-widest">Premium Curator</p></div>
+</div>
+<nav class="flex-1 space-y-1">
+<button data-page-target="home" onclick="showPage('home')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all rounded-xl ease-in-out duration-300 w-full text-left">
+<span class="material-symbols-outlined">home</span><span class="sidebar-label">Home</span>
+</button>
+<button data-page-target="search" onclick="showPage('search')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all rounded-xl ease-in-out duration-300 w-full text-left">
+<span class="material-symbols-outlined">search</span><span class="sidebar-label">Search</span>
+</button>
+<button data-page-target="collections" onclick="showPage('collections')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all rounded-xl ease-in-out duration-300 w-full text-left">
+<span class="material-symbols-outlined">folder_special</span><span class="sidebar-label">Collections</span>
+</button>
+<button data-page-target="mindmap" onclick="showPage('mindmap')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all rounded-xl ease-in-out duration-300 w-full text-left">
+<span class="material-symbols-outlined">hub</span><span class="sidebar-label">Mind Map</span>
+</button>
+<button data-page-target="dashboard" onclick="showPage('dashboard')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all rounded-xl ease-in-out duration-300 w-full text-left">
+<span class="material-symbols-outlined">dashboard</span><span class="sidebar-label">Dashboard</span>
+</button>
+<button data-page-target="preview" onclick="showPage('preview')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all rounded-xl ease-in-out duration-300 w-full text-left">
+<span class="material-symbols-outlined">description</span><span class="sidebar-label">File Preview</span>
+</button>
+</nav>
+<div class="mt-auto space-y-1 pt-4 border-t border-slate-200/50">
+<button onclick="handleSidebarAction('upload')" class="sidebar-upload-btn w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl font-semibold shadow-lg shadow-primary/20 hover:scale-[1.02] transition-transform">
+<span class="material-symbols-outlined text-sm">add</span><span class="sidebar-upload-label">Upload File</span>
+</button>
+<button onclick="handleSidebarAction('help')" class="sidebar-footer-btn flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all rounded-xl ease-in-out duration-300 w-full text-left">
+<span class="material-symbols-outlined">help</span><span class="sidebar-footer-label">Help</span>
+</button>
+<button onclick="handleSidebarAction('logout')" class="sidebar-footer-btn flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all rounded-xl ease-in-out duration-300 w-full text-left">
+<span class="material-symbols-outlined">logout</span><span class="sidebar-footer-label">Logout</span>
+</button>
+</div>
+</aside>
+
+<main class="flex-1 relative overflow-hidden bg-surface flex flex-col">
+<header class="flex justify-between items-center w-full px-6 py-3 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl sticky top-0 z-50 shadow-sm">
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="absolute inset-y-0 left-3 flex items-center text-slate-400"><span class="material-symbols-outlined text-sm">search</span></span>
+<input class="pl-10 pr-4 py-2 bg-slate-100 border-none rounded-full text-sm w-64 focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search mind map..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:text-primary transition-colors"><span class="material-symbols-outlined">notifications</span></button>
+<button class="p-2 text-slate-500 hover:text-primary transition-colors"><span class="material-symbols-outlined">settings</span></button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-slate-200"><img alt="Professional user profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzndc8oQlAmDdd2RsOivz3w4AfuC9danX0z2kxJfzezwx9Ff1m6Os18ELgbnadJCLgPssSf6gmcbDLzgUkDhTuz9Gi1kBjue4XaknQuy10xshxUykEBRQJg2o_-sPh-HrEG9ZguRL5DtmcvVnUn1wvaaDt4cwLro4xlQLhQ4D-73Mh7UVxsUIMeg-1zadLlQnu8ak3VFw80IKIvx81Ouw1glB-2H4CndYsuQatk7ntTKGlnOILWdFoJ0toFwYLvPH4-deGU4v1Lw"/></div>
+</div>
+</header>
+
+<div class="flex-1 relative cursor-grab active:cursor-grabbing bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:32px_32px]">
+<svg class="absolute inset-0 w-full h-full pointer-events-none">
+<line class="knowledge-graph-line" x1="50%" x2="30%" y1="50%" y2="35%"></line>
+<line class="knowledge-graph-line" x1="50%" x2="70%" y1="50%" y2="35%"></line>
+<line class="knowledge-graph-line" x1="50%" x2="50%" y1="50%" y2="75%"></line>
+<line class="knowledge-graph-line" x1="30%" x2="20%" y1="35%" y2="25%"></line>
+<line class="knowledge-graph-line" x1="30%" x2="15%" y1="35%" y2="40%"></line>
+<line class="knowledge-graph-line" x1="70%" x2="80%" y1="35%" y2="25%"></line>
+<line class="knowledge-graph-line" x1="70%" x2="85%" y1="35%" y2="40%"></line>
+<line class="knowledge-graph-line" x1="70%" x2="75%" y1="35%" y2="15%"></line>
+<line class="knowledge-graph-line" x1="50%" x2="40%" y1="75%" y2="85%"></line>
+<line class="knowledge-graph-line" x1="50%" x2="60%" y1="75%" y2="85%"></line>
+</svg>
+
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+<div class="center-node w-32 h-32 rounded-full bg-primary flex flex-col items-center justify-center text-white shadow-2xl shadow-primary/40 ring-8 ring-white/50">
+<span class="material-symbols-outlined text-4xl mb-1" style="font-variation-settings: 'FILL' 1;">workspaces</span>
+<span class="font-headline font-bold text-xs tracking-tight">My Workspace</span>
+</div>
+</div>
+
+<div class="absolute top-[35%] left-[30%] -translate-x-1/2 -translate-y-1/2 group">
+<div class="secondary-node w-20 h-20 rounded-full glass-panel border border-primary/20 flex flex-col items-center justify-center text-primary shadow-xl group-hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-2xl">code</span>
+<span class="font-label text-[10px] mt-1 font-semibold">GitHub Repos</span>
+</div>
+<div class="sub-node absolute -top-16 -left-12 opacity-80">
+<div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
+<span class="material-symbols-outlined text-sm text-slate-500">folder</span><span class="text-[10px] font-medium">frontend-ui</span>
+</div>
+</div>
+<div class="sub-node absolute top-4 -left-20 opacity-80">
+<div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
+<span class="material-symbols-outlined text-sm text-slate-500">folder</span><span class="text-[10px] font-medium">backend-api</span>
+</div>
+</div>
+</div>
+
+<div class="absolute top-[35%] left-[70%] -translate-x-1/2 -translate-y-1/2 group">
+<div class="secondary-node w-20 h-20 rounded-full glass-panel border border-primary/20 flex flex-col items-center justify-center text-primary shadow-xl group-hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-2xl">folder</span>
+<span class="font-label text-[10px] mt-1 font-semibold">Project Folders</span>
+</div>
+<div class="sub-node absolute -top-16 right-0 opacity-80">
+<div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
+<span class="material-symbols-outlined text-sm text-tertiary">folder</span><span class="text-[10px] font-medium">Marketing</span>
+</div>
+</div>
+<div class="sub-node absolute top-4 -right-24 opacity-80">
+<div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
+<span class="material-symbols-outlined text-sm text-primary">folder</span><span class="text-[10px] font-medium">Q4 Reports</span>
+</div>
+</div>
+<div class="sub-node absolute -top-24 -right-12 opacity-80">
+<div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-full shadow-sm border border-slate-100">
+<span class="material-symbols-outlined text-sm text-orange-400">folder</span><span class="text-[10px] font-medium">Designs</span>
+</div>
+</div>
+</div>
+
+<div class="absolute top-[75%] left-[50%] -translate-x-1/2 -translate-y-1/2 group">
+<div class="secondary-node w-20 h-20 rounded-full glass-panel border border-primary/20 flex flex-col items-center justify-center text-primary shadow-xl group-hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-2xl">history</span>
+<span class="font-label text-[10px] mt-1 font-semibold text-center">Recent<br/>Docs</span>
+</div>
+<div class="sub-node absolute top-16 -left-24 opacity-80">
+<div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl shadow-md border border-slate-100">
+<span class="material-symbols-outlined text-red-500 text-sm">description</span><span class="text-[10px] font-medium">strategy_v2.pdf</span>
+</div>
+</div>
+<div class="sub-node absolute top-16 -right-24 opacity-80">
+<div class="flex items-center gap-2 bg-white px-3 py-2 rounded-xl shadow-md border border-slate-100">
+<span class="material-symbols-outlined text-blue-500 text-sm">article</span><span class="text-[10px] font-medium">meeting_notes.docx</span>
+</div>
+</div>
+</div>
+
+<div class="absolute bottom-8 right-8 flex flex-col gap-3">
+<div class="flex flex-col bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+<button class="p-3 hover:bg-slate-50 transition-colors text-slate-600 border-b border-slate-100"><span class="material-symbols-outlined">add</span></button>
+<button class="p-3 hover:bg-slate-50 transition-colors text-slate-600"><span class="material-symbols-outlined">remove</span></button>
+</div>
+<button class="w-12 h-12 rounded-2xl bg-white shadow-2xl border border-slate-200 flex items-center justify-center text-slate-600 hover:bg-slate-50 transition-colors"><span class="material-symbols-outlined">restart_alt</span></button>
+<button class="w-12 h-12 rounded-2xl bg-primary text-white shadow-2xl shadow-primary/30 flex items-center justify-center hover:scale-105 transition-transform"><span class="material-symbols-outlined">fullscreen</span></button>
+</div>
+
+<div class="absolute bottom-8 left-8 w-64 glass-panel p-5 rounded-3xl border border-white shadow-2xl">
+<h3 class="font-headline font-bold text-slate-900 mb-1">Knowledge Graph</h3>
+<p class="text-xs text-slate-500 mb-4 leading-relaxed">Visualizing 24 connections across 3 primary data streams in your workspace.</p>
+<div class="flex gap-2">
+<div class="flex -space-x-2">
+<img alt="Team member" class="w-6 h-6 rounded-full border-2 border-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOrcl5jU4yI41toRdrNlZPVD3biRrMbbTN0RREHQpTwT7qolgzImk8Ubd-RIrV6BHsnTG9Eflm3eRQsbqnQM_FN_xYUtQZTbt55qF19fRKklEBCXlNWfhaHveEBvdpBdB-XEAKtdiDY5CTFoOW7klnqeie07hbtgPwFz5ZZXF8Hww_rJQ_P354ZqzpVfD8dgbEaxzXEfBdxQN9erD-ZjvcjngW9OI5n4TzAb_aYFYy6m7hRXHr7FdkVWvXu2H3Cauf7OCt3MTjWQ"/>
+<img alt="Team member" class="w-6 h-6 rounded-full border-2 border-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC3nJvWGXAitbW0L0JWiUCJZi0R0e8Fq6xPWNLWCw3zxfU1ZK0J5m53WB6orOopBw4V-eDw0wlMTFXp050u9lzEcYl67r8Nb5HSIZ92nphzgZBd3dW28AZsrLeE4VQiWZJTOwTsz7Xn2A_wyVZ-SZ8WjT8z4md0JYDaRE8HgOtx21pOjIX-C9meHHlslBss2b2Fv3Vg2uDRXQvfRXTyUFSz1BHw36vjFg7oMKzPbS9bH0xx25V2_EjfcR2UjK5PTHug7F4_qPyROw"/>
+<div class="w-6 h-6 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[8px] font-bold text-slate-400">+4</div>
+</div>
+<span class="text-[10px] font-medium text-slate-400 self-center">Shared with team</span>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+<!-- ============ SEARCH RESULTS PAGE ============ -->
+<div id="search-page" class="page">
+<div class="flex min-h-screen">
+<aside class="auto-sidebar hidden md:flex flex-col h-screen rounded-r-3xl bg-slate-50 dark:bg-slate-950 p-4 gap-2 sticky top-0 z-40">
+<div class="sidebar-brand flex items-center gap-3 px-4 py-6">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white"><span class="material-symbols-outlined">auto_awesome</span></div>
+<div class="sidebar-brand-copy"><h1 class="text-lg font-black text-blue-600">TracePath</h1><p class="text-[10px] text-slate-500 uppercase tracking-widest">Premium Curator</p></div>
+</div>
+<nav class="flex flex-col gap-1 flex-1">
+<button data-page-target="home" onclick="showPage('home')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all font-inter text-sm rounded-xl w-full text-left">
+<span class="material-symbols-outlined">home</span><span class="sidebar-label">Home</span>
+</button>
+<button data-page-target="search" onclick="showPage('search')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all font-inter text-sm rounded-xl w-full text-left">
+<span class="material-symbols-outlined">search</span><span class="sidebar-label">Search</span>
+</button>
+<button data-page-target="collections" onclick="showPage('collections')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all font-inter text-sm rounded-xl w-full text-left">
+<span class="material-symbols-outlined">folder_special</span><span class="sidebar-label">Collections</span>
+</button>
+<button data-page-target="mindmap" onclick="showPage('mindmap')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all font-inter text-sm rounded-xl w-full text-left">
+<span class="material-symbols-outlined">hub</span><span class="sidebar-label">Mind Map</span>
+</button>
+<button data-page-target="dashboard" onclick="showPage('dashboard')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all font-inter text-sm rounded-xl w-full text-left">
+<span class="material-symbols-outlined">dashboard</span><span class="sidebar-label">Dashboard</span>
+</button>
+<button data-page-target="preview" onclick="showPage('preview')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all font-inter text-sm rounded-xl w-full text-left">
+<span class="material-symbols-outlined">description</span><span class="sidebar-label">File Preview</span>
+</button>
+</nav>
+<div class="mt-auto space-y-1 pt-4 border-t border-slate-200/50">
+<button onclick="handleSidebarAction('upload')" class="sidebar-upload-btn w-full py-3 px-4 bg-gradient-to-br from-primary to-primary-container text-white rounded-xl font-semibold text-sm shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span><span class="sidebar-upload-label">Upload File</span>
+</button>
+<button onclick="handleSidebarAction('help')" class="sidebar-footer-btn flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all font-inter text-sm rounded-xl w-full text-left">
+<span class="material-symbols-outlined">help</span><span class="sidebar-footer-label">Help</span>
+</button>
+<button onclick="handleSidebarAction('logout')" class="sidebar-footer-btn flex items-center gap-3 px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 transition-all font-inter text-sm rounded-xl w-full text-left">
+<span class="material-symbols-outlined">logout</span><span class="sidebar-footer-label">Logout</span>
+</button>
+</div>
+</aside>
+
+<main class="flex-1 flex flex-col min-w-0">
+<header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-sm docked full-width top-0 sticky z-50 flex justify-between items-center w-full px-6 py-3">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-xl">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-xl pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search documents, authors, or topics..." type="text" value="Project Alpha"/>
+</div>
+</div>
+<div class="flex items-center gap-4 ml-6">
+<button class="text-slate-500 hover:text-blue-500 transition-colors"><span class="material-symbols-outlined">notifications</span></button>
+<button class="text-slate-500 hover:text-blue-500 transition-colors"><span class="material-symbols-outlined">settings</span></button>
+<div class="h-8 w-8 rounded-full bg-slate-200 overflow-hidden border border-outline-variant/20">
+<img alt="Professional user profile" class="h-full w-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEsuL6Z-SMbjDoZX-YHGeUVY74zMSfMUTZoNUd4LcETLcmlZARZ_PxLibuazhddp8942A_JbUI_6nsgO9YujYx62TbNJ3_qrPRVO9f84ytJvhPY3DfpUYW96hYHQ_5jLp5RPyAYANMG-ejF0paPT6qbcU0dlkyu9T7MVwKI3Hzb4F9cDHCYQqFFkbPbtpOy-eyehWIUiXjmM5KyJvHBltiKanflf3026DfR4hOqZU1UONAwt5gS75UupuxVQ-l2oQPxgLIlrfPiw"/>
+</div>
+</div>
+</header>
+
+<div class="flex-1 p-6 md:p-10 flex flex-col md:flex-row gap-10">
+<section class="w-full md:w-72 flex flex-col gap-8">
+<div>
+<h3 class="text-sm font-bold text-on-surface mb-4 font-headline uppercase tracking-widest">File Types</h3>
+<div class="flex flex-wrap gap-2">
+<button class="filter-btn px-4 py-2 bg-primary text-white rounded-full text-xs font-semibold shadow-sm transition-all">All</button>
+<button class="filter-btn px-4 py-2 bg-surface-container-high text-secondary rounded-full text-xs font-semibold hover:bg-surface-container-highest transition-all">DOCX</button>
+<button class="filter-btn px-4 py-2 bg-surface-container-high text-secondary rounded-full text-xs font-semibold hover:bg-surface-container-highest transition-all">Excel</button>
+<button class="filter-btn px-4 py-2 bg-surface-container-high text-secondary rounded-full text-xs font-semibold hover:bg-surface-container-highest transition-all">PDF</button>
+<button class="filter-btn px-4 py-2 bg-surface-container-high text-secondary rounded-full text-xs font-semibold hover:bg-surface-container-highest transition-all">PPTX</button>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-sm font-bold text-on-surface font-headline uppercase tracking-widest">Last Modified</h3>
+<span class="text-[10px] font-bold text-primary bg-primary-fixed px-2 py-0.5 rounded-full">90 Days</span>
+</div>
+<div class="px-2">
+<div class="h-1.5 w-full bg-surface-container-highest rounded-full relative">
+<div class="absolute left-0 top-0 h-full w-2/3 bg-primary rounded-full"></div>
+<div class="absolute left-2/3 top-1/2 -translate-y-1/2 h-4 w-4 bg-white border-2 border-primary rounded-full shadow-md"></div>
+</div>
+<div class="flex justify-between mt-3 text-[10px] text-secondary font-medium">
+<span>Anytime</span><span>Today</span>
+</div>
+</div>
+</div>
+<div class="pt-6 border-t border-outline-variant/10">
+<h3 class="text-sm font-bold text-on-surface mb-4 font-headline uppercase tracking-widest">Author</h3>
+<div class="space-y-3">
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="w-4 h-4 rounded border border-outline group-hover:border-primary transition-colors"></div>
+<span class="text-sm text-secondary group-hover:text-on-surface transition-colors">Sarah Jenkins</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="w-4 h-4 rounded border border-outline group-hover:border-primary transition-colors"></div>
+<span class="text-sm text-secondary group-hover:text-on-surface transition-colors">Marcus Chen</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<div class="w-4 h-4 rounded border border-outline group-hover:border-primary transition-colors"></div>
+<span class="text-sm text-secondary group-hover:text-on-surface transition-colors">Elena Rodriguez</span>
+</label>
+</div>
+</div>
+</section>
+
+<section class="flex-1 flex flex-col gap-6">
+<div>
+<h2 class="text-2xl font-extrabold font-headline text-on-surface">32 Results for "Project Alpha"</h2>
+<p class="text-sm text-secondary mt-1">Discovering intellectual assets across your workspace.</p>
+</div>
+<div class="flex items-center gap-2 text-xs font-semibold text-secondary">
+<span>Sort by:</span>
+<button class="flex items-center gap-1 text-on-surface">Relevance <span class="material-symbols-outlined text-sm">expand_more</span></button>
+</div>
+
+<article class="bg-surface-container-lowest p-6 rounded-3xl shadow-sm border border-transparent hover:border-outline-variant/15 transition-all group cursor-pointer">
+<div class="flex gap-5">
+<div class="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-blue-600 text-3xl" style="font-variation-settings: 'FILL' 1;">description</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<h3 class="text-lg font-bold text-on-surface group-hover:text-primary transition-colors truncate pr-4 font-headline">Project Alpha - Final Q4 Strategy Deployment.docx</h3>
+<button class="text-secondary hover:text-on-surface transition-colors"><span class="material-symbols-outlined">more_vert</span></button>
+</div>
+<p class="text-sm text-secondary mt-2 line-clamp-2 leading-relaxed">This document outlines the strategic pivot for the Alpha division, focusing on aggressive market expansion and new digital curation protocols. Key stakeholders include Jenkins and Chen...</p>
+<div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline">person</span>
+<span class="text-xs font-medium text-secondary">Sarah Jenkins</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline">database</span>
+<span class="text-xs font-medium text-secondary">2.4MB</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline">calendar_today</span>
+<span class="text-xs font-medium text-secondary">Modified 2 days ago</span>
+</div>
+</div>
+</div>
+</div>
+</article>
+
+<article class="bg-surface-container-lowest p-6 rounded-3xl shadow-sm border border-transparent hover:border-outline-variant/15 transition-all group cursor-pointer">
+<div class="flex gap-5">
+<div class="w-14 h-14 rounded-2xl bg-green-50 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-green-600 text-3xl" style="font-variation-settings: 'FILL' 1;">table_chart</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<h3 class="text-lg font-bold text-on-surface group-hover:text-primary transition-colors truncate pr-4 font-headline">Alpha_Budget_Projections_2024.xlsx</h3>
+<button class="text-secondary hover:text-on-surface transition-colors"><span class="material-symbols-outlined">more_vert</span></button>
+</div>
+<p class="text-sm text-secondary mt-2 line-clamp-2 leading-relaxed">Detailed financial breakdown of operational expenses for Project Alpha. Includes quarterly forecasts, resource allocation, and variance analysis for the international branch.</p>
+<div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline">person</span>
+<span class="text-xs font-medium text-secondary">Marcus Chen</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline">database</span>
+<span class="text-xs font-medium text-secondary">1.8MB</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline">calendar_today</span>
+<span class="text-xs font-medium text-secondary">Modified 1 week ago</span>
+</div>
+</div>
+</div>
+</div>
+</article>
+
+<article class="bg-surface-container-lowest p-6 rounded-3xl shadow-sm border border-transparent hover:border-outline-variant/15 transition-all group cursor-pointer">
+<div class="flex gap-5">
+<div class="w-14 h-14 rounded-2xl bg-red-50 flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-red-600 text-3xl" style="font-variation-settings: 'FILL' 1;">picture_as_pdf</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<h3 class="text-lg font-bold text-on-surface group-hover:text-primary transition-colors truncate pr-4 font-headline">Executive Summary - Project Alpha Compliance.pdf</h3>
+<button class="text-secondary hover:text-on-surface transition-colors"><span class="material-symbols-outlined">more_vert</span></button>
+</div>
+<p class="text-sm text-secondary mt-2 line-clamp-2 leading-relaxed">Legal compliance review for Project Alpha's European expansion. This document contains sensitive regulatory information and data protection guidelines.</p>
+<div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline">person</span>
+<span class="text-xs font-medium text-secondary">Legal Dept</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline">database</span>
+<span class="text-xs font-medium text-secondary">4.2MB</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-sm text-outline">calendar_today</span>
+<span class="text-xs font-medium text-secondary">Modified Oct 12, 2023</span>
+</div>
+</div>
+</div>
+</div>
+</article>
+
+<div class="flex items-center justify-center py-10">
+<button class="group flex items-center gap-3 px-8 py-4 bg-surface-container text-on-surface font-bold rounded-2xl hover:bg-surface-container-highest transition-all">
+<span>Load more discoveries</span>
+<span class="material-symbols-outlined group-hover:translate-y-1 transition-transform">arrow_downward</span>
+</button>
+</div>
+</section>
+</div>
+</main>
+</div>
+
+<!-- ============ COLLECTIONS PAGE ============ -->
+<div id="collections-page" class="page">
+<div class="flex min-h-screen">
+<aside class="auto-sidebar hidden md:flex flex-col h-screen rounded-r-3xl bg-slate-50 dark:bg-slate-950 p-4 gap-2 sticky top-0 z-40">
+<div class="sidebar-brand flex items-center gap-3 px-4 py-6">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white"><span class="material-symbols-outlined">auto_awesome</span></div>
+<div class="sidebar-brand-copy"><h1 class="text-lg font-black text-blue-600">TracePath</h1><p class="text-[10px] text-slate-500 uppercase tracking-widest">Premium Curator</p></div>
+</div>
+<nav class="flex-1 space-y-1">
+<button data-page-target="home" onclick="showPage('home')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">home</span><span class="sidebar-label">Home</span></button>
+<button data-page-target="search" onclick="showPage('search')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">search</span><span class="sidebar-label">Search</span></button>
+<button data-page-target="collections" onclick="showPage('collections')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">folder_special</span><span class="sidebar-label">Collections</span></button>
+<button data-page-target="mindmap" onclick="showPage('mindmap')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">hub</span><span class="sidebar-label">Mind Map</span></button>
+<button data-page-target="dashboard" onclick="showPage('dashboard')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">dashboard</span><span class="sidebar-label">Dashboard</span></button>
+<button data-page-target="preview" onclick="showPage('preview')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">description</span><span class="sidebar-label">File Preview</span></button>
+</nav>
+<div class="mt-auto space-y-1 pt-4 border-t border-slate-200/50">
+<button onclick="handleSidebarAction('upload')" class="sidebar-upload-btn w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl font-semibold"><span class="material-symbols-outlined text-sm">add</span><span class="sidebar-upload-label">Upload File</span></button>
+<button onclick="handleSidebarAction('help')" class="sidebar-footer-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">help</span><span class="sidebar-footer-label">Help</span></button>
+<button onclick="handleSidebarAction('logout')" class="sidebar-footer-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">logout</span><span class="sidebar-footer-label">Logout</span></button>
+</div>
+</aside>
+<main class="flex-1 p-8 md:p-10">
+<div class="mb-8">
+<h1 class="text-3xl font-headline font-extrabold text-on-surface">My Collections</h1>
+<p class="text-sm text-secondary mt-2">Organize and access your document vaults.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+<article class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-all cursor-pointer"><span class="material-symbols-outlined text-blue-600 text-3xl">folder_shared</span><h3 class="font-headline font-bold mt-3">Client Assets</h3><p class="text-xs text-secondary mt-1">124 files</p></article>
+<article class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-all cursor-pointer"><span class="material-symbols-outlined text-orange-500 text-3xl">folder_zip</span><h3 class="font-headline font-bold mt-3">Archived Projects</h3><p class="text-xs text-secondary mt-1">3,402 files</p></article>
+<article class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-all cursor-pointer"><span class="material-symbols-outlined text-emerald-600 text-3xl">folder_managed</span><h3 class="font-headline font-bold mt-3">Invoices</h3><p class="text-xs text-secondary mt-1">88 files</p></article>
+<article class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-all cursor-pointer"><span class="material-symbols-outlined text-purple-500 text-3xl">folder_special</span><h3 class="font-headline font-bold mt-3">Legal Docs</h3><p class="text-xs text-secondary mt-1">45 files</p></article>
+<article class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-all cursor-pointer"><span class="material-symbols-outlined text-red-500 text-3xl">folder_open</span><h3 class="font-headline font-bold mt-3">Compliance</h3><p class="text-xs text-secondary mt-1">112 files</p></article>
+<article class="bg-white p-6 rounded-2xl shadow-sm hover:shadow-md transition-all cursor-pointer"><span class="material-symbols-outlined text-cyan-600 text-3xl">inventory_2</span><h3 class="font-headline font-bold mt-3">Media Assets</h3><p class="text-xs text-secondary mt-1">890 files</p></article>
+</div>
+</main>
+</div>
+</div>
+
+<!-- ============ DASHBOARD PAGE ============ -->
+<div id="dashboard-page" class="page">
+<div class="flex min-h-screen">
+<aside class="auto-sidebar hidden md:flex flex-col h-screen rounded-r-3xl bg-slate-50 dark:bg-slate-950 p-4 gap-2 sticky top-0 z-40">
+<div class="sidebar-brand flex items-center gap-3 px-4 py-6">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white"><span class="material-symbols-outlined">auto_awesome</span></div>
+<div class="sidebar-brand-copy"><h1 class="text-lg font-black text-blue-600">TracePath</h1><p class="text-[10px] text-slate-500 uppercase tracking-widest">Premium Curator</p></div>
+</div>
+<nav class="flex-1 space-y-1">
+<button data-page-target="home" onclick="showPage('home')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">home</span><span class="sidebar-label">Home</span></button>
+<button data-page-target="search" onclick="showPage('search')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">search</span><span class="sidebar-label">Search</span></button>
+<button data-page-target="collections" onclick="showPage('collections')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">folder_special</span><span class="sidebar-label">Collections</span></button>
+<button data-page-target="mindmap" onclick="showPage('mindmap')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">hub</span><span class="sidebar-label">Mind Map</span></button>
+<button data-page-target="dashboard" onclick="showPage('dashboard')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">dashboard</span><span class="sidebar-label">Dashboard</span></button>
+<button data-page-target="preview" onclick="showPage('preview')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">description</span><span class="sidebar-label">File Preview</span></button>
+</nav>
+<div class="mt-auto space-y-1 pt-4 border-t border-slate-200/50">
+<button onclick="handleSidebarAction('upload')" class="sidebar-upload-btn w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl font-semibold"><span class="material-symbols-outlined text-sm">add</span><span class="sidebar-upload-label">Upload File</span></button>
+<button onclick="handleSidebarAction('help')" class="sidebar-footer-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">help</span><span class="sidebar-footer-label">Help</span></button>
+<button onclick="handleSidebarAction('logout')" class="sidebar-footer-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">logout</span><span class="sidebar-footer-label">Logout</span></button>
+</div>
+</aside>
+<main class="flex-1 p-8 md:p-10">
+<div class="mb-8">
+<h1 class="text-3xl font-headline font-extrabold text-on-surface">Dashboard</h1>
+<p class="text-sm text-secondary mt-2">Overview of your workspace activity.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
+<article class="bg-white p-6 rounded-2xl shadow-sm"><p class="text-xs text-secondary uppercase tracking-wider">Total Files</p><h3 class="text-3xl font-headline font-bold mt-2">1,284</h3></article>
+<article class="bg-white p-6 rounded-2xl shadow-sm"><p class="text-xs text-secondary uppercase tracking-wider">Shared Docs</p><h3 class="text-3xl font-headline font-bold mt-2">342</h3></article>
+<article class="bg-white p-6 rounded-2xl shadow-sm"><p class="text-xs text-secondary uppercase tracking-wider">Recent Activity</p><h3 class="text-3xl font-headline font-bold mt-2">28</h3></article>
+</div>
+<article class="bg-white p-6 rounded-2xl shadow-sm">
+<h2 class="font-headline font-bold text-lg mb-4">Recent Activity</h2>
+<ul class="space-y-3 text-sm text-secondary">
+<li><span class="font-semibold text-on-surface">Uploaded</span> Q4 Financial Report - 2 hours ago</li>
+<li><span class="font-semibold text-on-surface">Shared</span> Marketing Strategy with team - 5 hours ago</li>
+<li><span class="font-semibold text-on-surface">Updated</span> Budget Projections - 1 day ago</li>
+</ul>
+</article>
+</main>
+</div>
+</div>
+
+<!-- ============ PREVIEW PAGE ============ -->
+<div id="preview-page" class="page">
+<div class="flex min-h-screen">
+<aside class="auto-sidebar hidden md:flex flex-col h-screen rounded-r-3xl bg-slate-50 dark:bg-slate-950 p-4 gap-2 sticky top-0 z-40">
+<div class="sidebar-brand flex items-center gap-3 px-4 py-6">
+<div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white"><span class="material-symbols-outlined">auto_awesome</span></div>
+<div class="sidebar-brand-copy"><h1 class="text-lg font-black text-blue-600">TracePath</h1><p class="text-[10px] text-slate-500 uppercase tracking-widest">Premium Curator</p></div>
+</div>
+<nav class="flex-1 space-y-1">
+<button data-page-target="home" onclick="showPage('home')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">home</span><span class="sidebar-label">Home</span></button>
+<button data-page-target="search" onclick="showPage('search')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">search</span><span class="sidebar-label">Search</span></button>
+<button data-page-target="collections" onclick="showPage('collections')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">folder_special</span><span class="sidebar-label">Collections</span></button>
+<button data-page-target="mindmap" onclick="showPage('mindmap')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">hub</span><span class="sidebar-label">Mind Map</span></button>
+<button data-page-target="dashboard" onclick="showPage('dashboard')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">dashboard</span><span class="sidebar-label">Dashboard</span></button>
+<button data-page-target="preview" onclick="showPage('preview')" class="sidebar-nav-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">description</span><span class="sidebar-label">File Preview</span></button>
+</nav>
+<div class="mt-auto space-y-1 pt-4 border-t border-slate-200/50">
+<button onclick="handleSidebarAction('upload')" class="sidebar-upload-btn w-full flex items-center justify-center gap-2 bg-primary text-white py-3 rounded-xl font-semibold"><span class="material-symbols-outlined text-sm">add</span><span class="sidebar-upload-label">Upload File</span></button>
+<button onclick="handleSidebarAction('help')" class="sidebar-footer-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">help</span><span class="sidebar-footer-label">Help</span></button>
+<button onclick="handleSidebarAction('logout')" class="sidebar-footer-btn flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-200/50 rounded-xl w-full text-left"><span class="material-symbols-outlined">logout</span><span class="sidebar-footer-label">Logout</span></button>
+</div>
+</aside>
+<main class="flex-1 p-8 md:p-10">
+<div class="mb-8">
+<h1 class="text-3xl font-headline font-extrabold text-on-surface">File Preview</h1>
+<p class="text-sm text-secondary mt-2">Document details and context side by side.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
+<section class="bg-white rounded-2xl shadow-sm p-8 min-h-[420px] flex flex-col items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-primary text-7xl mb-4" style="font-variation-settings: 'FILL' 1;">picture_as_pdf</span>
+<p class="font-headline font-bold text-on-surface">Q4 Financial Report 2023.pdf</p>
+<p class="text-xs mt-2">Preview rendering area</p>
+</section>
+<section class="bg-white rounded-2xl shadow-sm p-6">
+<h2 class="font-headline font-bold text-lg mb-4">Metadata</h2>
+<div class="space-y-3 text-sm">
+<p><span class="text-secondary">Author:</span> David Chen</p>
+<p><span class="text-secondary">Type:</span> PDF</p>
+<p><span class="text-secondary">Size:</span> 4.2 MB</p>
+<p><span class="text-secondary">Updated:</span> Oct 12, 2023</p>
+</div>
+</section>
+</div>
+</main>
+</div>
+</div>
+
+</div>
+
+</body>
+
+<script>
+// Initialize Vanta Globe
+VANTA.GLOBE({
+  el: "#vanta-globe",
+  mouseControls: true,
+  touchControls: true,
+  gyroControls: false,
+  minHeight: 200.00,
+  minWidth: 200.00,
+  scale: 1.00,
+  scaleMobile: 1.00,
+  backgroundColor: 0xe8e8e8,
+  color1: 0xff73bf,
+  color2: 0xff4fa3,
+  size: 1.05,
+  speed: 0.62
+});
+
+// Interactive Dot Grid Background
+const dotGrid = document.getElementById('dot-grid');
+const dotSize = 40;
+const dots = [];
+
+function createDotGrid() {
+  dotGrid.innerHTML = '';
+  dots.length = 0;
+  
+  const cols = Math.ceil(window.innerWidth / dotSize) + 1;
+  const rows = Math.ceil(window.innerHeight / dotSize) + 1;
+  
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      const dot = document.createElement('div');
+      dot.className = 'dot';
+      dot.style.left = (i * dotSize) + 'px';
+      dot.style.top = (j * dotSize) + 'px';
+      dotGrid.appendChild(dot);
+      dots.push({
+        element: dot,
+        x: i * dotSize,
+        y: j * dotSize,
+        active: false
+      });
+    }
+  }
+}
+
+createDotGrid();
+
+window.addEventListener('resize', () => {
+  createDotGrid();
+});
+
+document.addEventListener('mousemove', (e) => {
+  const mouseX = e.clientX;
+  const mouseY = e.clientY;
+  const activationRadius = 110;
+  
+  dots.forEach(dot => {
+    const distance = Math.sqrt(
+      Math.pow(dot.x - mouseX, 2) + Math.pow(dot.y - mouseY, 2)
+    );
+    
+    if (distance < activationRadius) {
+      const glow = (activationRadius - distance) / activationRadius;
+      dot.element.style.setProperty('--glow', glow.toFixed(3));
+      dot.element.classList.add('active');
+      dot.active = true;
+    } else {
+      dot.element.style.removeProperty('--glow');
+      dot.element.classList.remove('active');
+      dot.active = false;
+    }
+  });
+});
+
+document.addEventListener('mouseleave', () => {
+  dots.forEach(dot => {
+    dot.element.classList.remove('active');
+    dot.active = false;
+  });
+});
+
+// Page Navigation
+function showPage(pageName) {
+  const targetPage = document.getElementById(pageName + '-page');
+  if (!targetPage) {
+    return;
+  }
+
+  document.querySelectorAll('.page').forEach(page => {
+    page.classList.remove('active');
+  });
+
+  targetPage.classList.add('active');
+  updateNavigationState(pageName);
+}
+
+function updateNavigationState(activePage) {
+  document.querySelectorAll('[data-page-target]').forEach(btn => {
+    const isActive = btn.dataset.pageTarget === activePage;
+    btn.classList.toggle('is-active', isActive);
+  });
+}
+
+function handleSidebarAction(action) {
+  if (action === 'upload') {
+    showToast('Upload workflow will open here next.');
+    showPage('dashboard');
+    return;
+  }
+  if (action === 'help') {
+    showToast('Help center is opening soon.');
+    return;
+  }
+  if (action === 'logout') {
+    showToast('Demo mode: logout is disabled.');
+  }
+}
+
+function showToast(message) {
+  const existing = document.querySelector('.toast');
+  if (existing) {
+    existing.remove();
+  }
+
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+
+  setTimeout(() => {
+    toast.remove();
+  }, 2200);
+}
+
+function setupAutoHideSidebar() {
+  const collapseDelay = 1400;
+
+  document.querySelectorAll('.auto-sidebar').forEach(sidebar => {
+    let collapseTimer = null;
+
+    const expand = () => {
+      sidebar.classList.remove('is-collapsed');
+      if (collapseTimer) {
+        clearTimeout(collapseTimer);
+      }
+    };
+
+    const scheduleCollapse = () => {
+      if (collapseTimer) {
+        clearTimeout(collapseTimer);
+      }
+      collapseTimer = setTimeout(() => {
+        sidebar.classList.add('is-collapsed');
+      }, collapseDelay);
+    };
+
+    sidebar.addEventListener('mouseenter', expand);
+    sidebar.addEventListener('mouseleave', scheduleCollapse);
+    sidebar.addEventListener('focusin', expand);
+    sidebar.addEventListener('focusout', scheduleCollapse);
+
+    scheduleCollapse();
+  });
+}
+
+function setupInteractiveNavigation() {
+  document.querySelectorAll('#search-page article').forEach(card => {
+    card.addEventListener('click', () => showPage('preview'));
+  });
+
+  document.querySelectorAll('#home-page .bento-card').forEach(card => {
+    card.addEventListener('click', () => showPage('dashboard'));
+  });
+
+  document.querySelectorAll('#home-page .group\\/item').forEach(item => {
+    item.addEventListener('click', () => showPage('search'));
+  });
+}
+
+setupAutoHideSidebar();
+setupInteractiveNavigation();
+showPage('home');
+
+// Ensure cursor is always normal
+document.addEventListener('mousemove', () => {
+  document.body.style.cursor = 'auto';
+});
+</script>
+
+</html>

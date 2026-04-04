@@ -1,0 +1,551 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>TracePath | Digital Curator</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.globe.min.js"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-container": "#fff6f4",
+                    "outline-variant": "#c2c6d8",
+                    "surface-container-low": "#f2f4f6",
+                    "error": "#ba1a1a",
+                    "on-primary-container": "#f8f7ff",
+                    "surface-container-highest": "#e0e3e5",
+                    "secondary-fixed": "#d3e4fe",
+                    "on-background": "#191c1e",
+                    "primary-fixed": "#dae1ff",
+                    "inverse-primary": "#b3c5ff",
+                    "on-primary-fixed-variant": "#003fa4",
+                    "primary-fixed-dim": "#b3c5ff",
+                    "surface-container": "#eceef0",
+                    "surface-tint": "#0054d6",
+                    "on-secondary-fixed-variant": "#38485d",
+                    "on-error-container": "#93000a",
+                    "inverse-on-surface": "#eff1f3",
+                    "surface-variant": "#e0e3e5",
+                    "on-primary": "#ffffff",
+                    "secondary": "#505f76",
+                    "on-secondary-fixed": "#0b1c30",
+                    "on-surface-variant": "#424656",
+                    "secondary-container": "#d0e1fb",
+                    "on-tertiary-fixed-variant": "#832600",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-container": "#54647a",
+                    "error-container": "#ffdad6",
+                    "on-primary-fixed": "#001849",
+                    "surface-container-high": "#e6e8ea",
+                    "on-error": "#ffffff",
+                    "on-surface": "#191c1e",
+                    "background": "#f7f9fb",
+                    "surface-bright": "#f7f9fb",
+                    "on-tertiary-fixed": "#390c00",
+                    "surface": "#f7f9fb",
+                    "inverse-surface": "#2d3133",
+                    "tertiary-fixed": "#ffdbd0",
+                    "tertiary-fixed-dim": "#ffb59d",
+                    "outline": "#727687",
+                    "secondary-fixed-dim": "#b7c8e1",
+                    "tertiary": "#a33200",
+                    "on-tertiary": "#ffffff",
+                    "primary": "#0050cb",
+                    "tertiary-container": "#cc4204",
+                    "surface-dim": "#d8dadc",
+                    "primary-container": "#0066ff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "1rem",
+                    "2xl": "1.5rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { 
+            font-family: 'Inter', sans-serif;
+            cursor: auto;
+        }
+        
+        * {
+            cursor: auto !important;
+        }
+        
+        .font-manrope { font-family: 'Manrope', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Interactive Dot Grid Background */
+        #dot-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .dot {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+        }
+        
+        .dot.active {
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 0 12px rgba(255, 255, 255, 0.6), 0 0 24px rgba(0, 80, 203, 0.3);
+            transform: scale(1.3);
+        }
+
+        /* Vanta Globe Container */
+        #vanta-globe {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* Main Content Overlay */
+        main {
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Smooth fade-in animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        h1 {
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .hero-subtitle {
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .search-container {
+            animation: fadeInScale 0.8s ease-out 0.6s both;
+        }
+
+        .bento-card {
+            animation: fadeInUp 0.8s ease-out;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .bento-card:nth-child(1) {
+            animation-delay: 0.8s;
+        }
+
+        .bento-card:nth-child(2) {
+            animation-delay: 0.9s;
+        }
+
+        .bento-card:nth-child(3) {
+            animation-delay: 1s;
+        }
+
+        .bento-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 80, 203, 0.15);
+        }
+
+        /* Enhanced button animations */
+        button {
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: left 0.5s ease;
+            z-index: -1;
+        }
+
+        button:hover::before {
+            left: 100%;
+        }
+
+        /* Smooth transitions for interactive elements */
+        a, button {
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Glassmorphism enhancement */
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        /* Sidebar animations */
+        aside {
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+        /* Navigation bar animations */
+        nav {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Footer animations */
+        footer {
+            animation: fadeInUp 0.8s ease-out 1.2s both;
+        }
+
+        /* Dropdown animation */
+        .dropdown-menu {
+            animation: fadeInScale 0.3s ease-out;
+        }
+
+        /* Recent files tag animations */
+        .recent-tag {
+            animation: fadeInUp 0.6s ease-out;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .recent-tag:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0, 80, 203, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col items-center overflow-x-hidden">
+<!-- Interactive Dot Grid Background -->
+<div id="dot-grid"></div>
+
+<!-- Vanta Globe Background -->
+<div id="vanta-globe"></div>
+
+<!-- TopNavBar -->
+<nav class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-sm no-border tonal-shift flex justify-between items-center w-full px-6 py-3 full-width top-0 sticky z-50">
+<div class="flex items-center gap-8">
+<span class="text-xl font-bold tracking-tight text-slate-900 dark:text-white font-manrope" style="">TracePath</span>
+<div class="hidden md:flex gap-6">
+<a class="font-manrope text-sm font-medium text-blue-600 dark:text-blue-400 border-b-2 border-blue-600" href="#" style="">Home</a>
+<a class="font-manrope text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-blue-500 transition-colors" href="#" style="">Search</a>
+<a class="font-manrope text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-blue-500 transition-colors" href="#" style="">Collections</a>
+<a class="font-manrope text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-blue-500 transition-colors" href="#" style="">Dashboard</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-slate-500 hover:text-blue-600 transition-colors p-2" data-icon="notifications" style="">notifications</button>
+<button class="material-symbols-outlined text-slate-500 hover:text-blue-600 transition-colors p-2" data-icon="settings" style="">settings</button>
+<div class="w-8 h-8 rounded-full overflow-hidden ml-2 border border-outline-variant/20">
+<img alt="Professional user profile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsauq1-z1FnF7jPpHo0kTzKDtO8_Wa_caRNXNTZ_Z1SALJX5k7QbLr5APidAE3xiwan_LjnzDv8mGnES3IU5H2SekKvHWqIrxH7FQPTo7q1hTyso4Lc6ZmoGYNzBfEToDWjWgfpWzJE2dq4aQBkgZmnqf6Q7hJGZ_uyg3NuS4vw-m_MoM4_iseeziCkxzbGFZY-OKtef1zxNQ24CeM1Y04PJCuhxzY8qqkc1OmLpS-CstFUhOk1GOJ1kS-JsR0JpliA2OOHQ1b9g" class="" style="">
+</div>
+</div>
+</nav>
+
+<main class="flex-grow flex flex-col items-center justify-center w-full max-w-5xl px-6 py-12 md:py-24 relative">
+<!-- Hero Search Section -->
+<div class="text-center mb-12 relative z-10">
+<h1 class="font-headline text-5xl md:text-7xl font-extrabold tracking-tight text-on-surface mb-6 opacity-90" style="">TracePath</h1>
+<p class="font-body text-lg text-secondary max-w-xl mx-auto leading-relaxed hero-subtitle" style="">
+            Experience a serene, hyper-intelligent gallery for your information. Search across every folder with precision.
+        </p>
+</div>
+
+<!-- Centered Search Bar with Glassmorphism -->
+<div class="w-full max-w-3xl relative group z-20 search-container">
+<div class="relative z-20 flex items-center bg-surface-container-lowest/80 backdrop-blur-2xl p-2 rounded-2xl shadow-[0_12px_32px_rgba(25,28,30,0.06)] ring-1 ring-outline-variant/15 focus-within:ring-primary/40 transition-all duration-300">
+<span class="material-symbols-outlined ml-4 text-secondary/60" data-icon="search" style="">search</span>
+<input class="w-full bg-transparent border-none focus:ring-0 px-4 py-4 text-lg font-body text-on-surface placeholder:text-secondary/40" placeholder="Search your intelligent library..." type="text" value="Q4 Financial Report">
+<button class="bg-gradient-to-br from-primary to-primary-container text-on-primary px-8 py-3 rounded-xl font-headline font-bold text-sm tracking-wide shadow-lg hover:shadow-primary/20 hover:scale-[1.02] transition-all flex items-center gap-2" style="">
+<span class="material-symbols-outlined text-sm" data-icon="bolt" data-weight="fill" style="font-variation-settings: &quot;FILL&quot; 1;">bolt</span>
+                CURATE
+            </button>
+</div>
+
+<!-- Predictive Typing Dropdown (Visible by Intent) -->
+<div class="absolute top-full left-0 right-0 mt-4 bg-surface-container-lowest/90 backdrop-blur-2xl rounded-2xl shadow-xl ring-1 ring-outline-variant/10 overflow-hidden z-10 dropdown-menu">
+<div class="p-4 space-y-1">
+<div class="flex items-center gap-4 p-3 hover:bg-surface-container-low rounded-xl transition-colors cursor-pointer group/item">
+<div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-600">
+<span class="material-symbols-outlined" data-icon="picture_as_pdf" style="">picture_as_pdf</span>
+</div>
+<div class="flex-grow">
+<p class="font-body text-sm font-semibold text-on-surface" style="">Q4 Financial Report 2023.pdf</p>
+<p class="font-label text-[10px] text-secondary tracking-wider uppercase" style="">Finance / Reports</p>
+</div>
+<span class="material-symbols-outlined text-secondary opacity-0 group-hover/item:opacity-100 transition-opacity" data-icon="north_west" style="">north_west</span>
+</div>
+<div class="flex items-center gap-4 p-3 hover:bg-surface-container-low rounded-xl transition-colors cursor-pointer group/item">
+<div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+<span class="material-symbols-outlined" data-icon="description" style="">description</span>
+</div>
+<div class="flex-grow">
+<p class="font-body text-sm font-semibold text-on-surface" style="">Q4 Marketing Strategy.docx</p>
+<p class="font-label text-[10px] text-secondary tracking-wider uppercase" style="">Marketing / 2024</p>
+</div>
+<span class="material-symbols-outlined text-secondary opacity-0 group-hover/item:opacity-100 transition-opacity" data-icon="north_west" style="">north_west</span>
+</div>
+<div class="flex items-center gap-4 p-3 hover:bg-surface-container-low rounded-xl transition-colors cursor-pointer group/item">
+<div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600">
+<span class="material-symbols-outlined" data-icon="table_chart" style="">table_chart</span>
+</div>
+<div class="flex-grow">
+<p class="font-body text-sm font-semibold text-on-surface" style="">Q4 Analytics Dashboard.xlsx</p>
+<p class="font-label text-[10px] text-secondary tracking-wider uppercase" style="">Analytics / Data</p>
+</div>
+<span class="material-symbols-outlined text-secondary opacity-0 group-hover/item:opacity-100 transition-opacity" data-icon="north_west" style="">north_west</span>
+</div>
+</div>
+<div class="bg-surface-container-low/50 px-6 py-3 flex justify-between items-center">
+<span class="font-label text-[11px] text-secondary/70" style="">Press <kbd class="px-1.5 py-0.5 bg-surface-container-highest rounded border border-outline-variant/30 text-[10px]">ESC</kbd> to close</span>
+<span class="font-label text-[11px] text-primary font-semibold cursor-pointer hover:underline" style="">View all results</span>
+</div>
+</div>
+</div>
+
+<!-- Quick Links Bento Layout -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-16 relative z-10">
+<!-- Upload Card -->
+<div class="bento-card md:col-span-1 p-6 rounded-2xl bg-surface-container-low/50 hover:bg-surface-container-lowest hover:shadow-lg transition-all duration-300 group cursor-pointer flex flex-col justify-between h-48 border border-transparent hover:border-outline-variant/10">
+<div class="flex justify-between items-start">
+<div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined" data-icon="cloud_upload" style="">cloud_upload</span>
+</div>
+<span class="material-symbols-outlined text-secondary/30 group-hover:text-primary transition-colors" data-icon="arrow_outward" style="">arrow_outward</span>
+</div>
+<div>
+<h3 class="font-headline font-bold text-lg text-on-surface" style="">Upload File</h3>
+<p class="font-body text-xs text-secondary mt-1" style="">Drag and drop or browse documents</p>
+</div>
+</div>
+
+<!-- Recent Files Section -->
+<div class="bento-card md:col-span-2 p-6 rounded-2xl bg-surface-container-low/50 hover:bg-surface-container-lowest hover:shadow-lg transition-all duration-300 border border-transparent hover:border-outline-variant/10">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline font-bold text-lg text-on-surface flex items-center gap-2" style="">
+<span class="material-symbols-outlined text-primary" data-icon="history" style="">history</span>
+                    Recent Files
+                </h3>
+<button class="font-label text-xs font-semibold text-primary hover:text-primary-container" style="">See all</button>
+</div>
+<div class="flex flex-wrap gap-3">
+<div class="recent-tag bg-white/80 backdrop-blur-sm px-4 py-2.5 rounded-xl flex items-center gap-3 shadow-sm border border-outline-variant/10 hover:translate-y-[-2px] transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-orange-500 text-sm" data-icon="draft" style="">draft</span>
+<span class="font-body text-xs font-medium" style="">Brand_Guidelines_v2</span>
+</div>
+<div class="recent-tag bg-white/80 backdrop-blur-sm px-4 py-2.5 rounded-xl flex items-center gap-3 shadow-sm border border-outline-variant/10 hover:translate-y-[-2px] transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-blue-500 text-sm" data-icon="article" style="">article</span>
+<span class="font-body text-xs font-medium" style="">Contract_Signed</span>
+</div>
+<div class="recent-tag bg-white/80 backdrop-blur-sm px-4 py-2.5 rounded-xl flex items-center gap-3 shadow-sm border border-outline-variant/10 hover:translate-y-[-2px] transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-purple-500 text-sm" data-icon="movie" style="">movie</span>
+<span class="font-body text-xs font-medium" style="">Promo_Assets</span>
+</div>
+<div class="recent-tag bg-white/80 backdrop-blur-sm px-4 py-2.5 rounded-xl flex items-center gap-3 shadow-sm border border-outline-variant/10 hover:translate-y-[-2px] transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-emerald-500 text-sm" data-icon="folder" style="">folder</span>
+<span class="font-body text-xs font-medium" style="">Archive_2023</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+<footer class="w-full max-w-5xl px-6 py-8 flex flex-col md:flex-row justify-between items-center text-secondary/60 relative z-10">
+<div class="flex items-center gap-6 mb-4 md:mb-0">
+<a class="font-label text-xs hover:text-primary transition-colors" href="#" style="">Privacy Policy</a>
+<a class="font-label text-xs hover:text-primary transition-colors" href="#" style="">Documentation</a>
+<a class="font-label text-xs hover:text-primary transition-colors" href="#" style="">API Status</a>
+</div>
+<p class="font-label text-[10px] uppercase tracking-widest" style="">© 2024 TRACEPATH INTELLIGENT SYSTEMS</p>
+</footer>
+
+<!-- Persistent Sidebar -->
+<aside class="fixed left-0 top-0 hidden lg:flex flex-col h-screen w-20 hover:w-64 group bg-slate-50 dark:bg-slate-950 p-4 gap-2 border-r border-outline-variant/10 transition-all duration-300 z-40">
+<div class="flex items-center gap-4 mb-8 px-2 overflow-hidden">
+<div class="w-10 h-10 rounded-xl bg-blue-600 flex-shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-white" data-icon="auto_awesome" style="">auto_awesome</span>
+</div>
+<div class="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+<p class="font-manrope text-sm font-black text-blue-600" style="">TracePath</p>
+<p class="text-[10px] text-slate-500" style="">Premium Curator</p>
+</div>
+</div>
+<div class="flex flex-col gap-1 flex-grow">
+<a class="flex items-center gap-4 p-3 bg-white dark:bg-slate-900 text-blue-600 shadow-sm rounded-xl font-semibold transition-all" href="#" style="">
+<span class="material-symbols-outlined" data-icon="home" style="">home</span>
+<span class="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-inter text-sm" style="">Home</span>
+</a>
+<a class="flex items-center gap-4 p-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 rounded-xl transition-all" href="#" style="">
+<span class="material-symbols-outlined" data-icon="search" style="">search</span>
+<span class="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-inter text-sm" style="">Search</span>
+</a>
+<a class="flex items-center gap-4 p-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 rounded-xl transition-all" href="#" style="">
+<span class="material-symbols-outlined" data-icon="folder_special" style="">folder_special</span>
+<span class="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-inter text-sm" style="">Collections</span>
+</a>
+<a class="flex items-center gap-4 p-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 rounded-xl transition-all" href="#" style="">
+<span class="material-symbols-outlined" data-icon="account_tree" style="">account_tree</span>
+<span class="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-inter text-sm" style="">Mind Map</span>
+</a>
+<a class="flex items-center gap-4 p-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 rounded-xl transition-all" href="#" style="">
+<span class="material-symbols-outlined" data-icon="dashboard" style="">dashboard</span>
+<span class="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-inter text-sm" style="">Dashboard</span>
+</a>
+</div>
+<div class="flex flex-col gap-1 border-t border-outline-variant/10 pt-4">
+<a class="flex items-center gap-4 p-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 rounded-xl transition-all" href="#" style="">
+<span class="material-symbols-outlined" data-icon="help" style="">help</span>
+<span class="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-inter text-sm" style="">Help</span>
+</a>
+<a class="flex items-center gap-4 p-3 text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 rounded-xl transition-all" href="#" style="">
+<span class="material-symbols-outlined" data-icon="logout" style="">logout</span>
+<span class="opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-inter text-sm" style="">Logout</span>
+</a>
+</div>
+</aside>
+
+<script>
+    // Initialize Vanta Globe
+    VANTA.GLOBE({
+        el: "#vanta-globe",
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        minHeight: 200.00,
+        minWidth: 200.00,
+        scale: 1.00,
+        scaleMobile: 1.00,
+        backgroundColor: 0xf7f9fb,
+        color1: 0x0050cb,
+        color2: 0x0066ff,
+        size: 1.0,
+        speed: 0.6
+    });
+
+    // Interactive Dot Grid Background
+    const dotGrid = document.getElementById('dot-grid');
+    const dotSize = 40;
+    const dots = [];
+    
+    function createDotGrid() {
+        dotGrid.innerHTML = '';
+        dots.length = 0;
+        
+        const cols = Math.ceil(window.innerWidth / dotSize) + 1;
+        const rows = Math.ceil(window.innerHeight / dotSize) + 1;
+        
+        for (let i = 0; i < cols; i++) {
+            for (let j = 0; j < rows; j++) {
+                const dot = document.createElement('div');
+                dot.className = 'dot';
+                dot.style.left = (i * dotSize) + 'px';
+                dot.style.top = (j * dotSize) + 'px';
+                dotGrid.appendChild(dot);
+                dots.push({
+                    element: dot,
+                    x: i * dotSize,
+                    y: j * dotSize,
+                    active: false
+                });
+            }
+        }
+    }
+    
+    // Initialize dot grid
+    createDotGrid();
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+        createDotGrid();
+    });
+    
+    // Mouse movement to activate nearby dots
+    document.addEventListener('mousemove', (e) => {
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
+        const activationRadius = 80;
+        
+        dots.forEach(dot => {
+            const distance = Math.sqrt(
+                Math.pow(dot.x - mouseX, 2) + Math.pow(dot.y - mouseY, 2)
+            );
+            
+            if (distance < activationRadius) {
+                dot.element.classList.add('active');
+                dot.active = true;
+            } else {
+                dot.element.classList.remove('active');
+                dot.active = false;
+            }
+        });
+    });
+    
+    // Deactivate dots when mouse leaves
+    document.addEventListener('mouseleave', () => {
+        dots.forEach(dot => {
+            dot.element.classList.remove('active');
+            dot.active = false;
+        });
+    });
+
+    // Ensure cursor is always normal
+    document.addEventListener('mousemove', () => {
+        document.body.style.cursor = 'auto';
+    });
+</script>
+</body></html>

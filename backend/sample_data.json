@@ -1,0 +1,39 @@
+{
+  "repositories": [
+    {
+      "name": "payment-api",
+      "owner": "aditya",
+      "language": "Python",
+      "description": "Stripe-based payment processing microservice"
+    },
+    {
+      "name": "auth-service",
+      "owner": "priya",
+      "language": "Node.js",
+      "description": "JWT authentication microservice"
+    },
+    {
+      "name": "data-pipeline",
+      "owner": "rahul",
+      "language": "Python",
+      "description": "ETL pipeline for analytics warehouse"
+    }
+  ],
+  "developers": [
+    { "login": "aditya", "contributions": 87, "repos": ["payment-api", "auth-service"] },
+    { "login": "priya",  "contributions": 54, "repos": ["auth-service", "data-pipeline"] },
+    { "login": "rahul",  "contributions": 23, "repos": ["data-pipeline"] }
+  ],
+  "issues": [
+    { "title": "Payment timeout error",            "repo": "payment-api",  "author": "aditya", "state": "open"   },
+    { "title": "Login bug on mobile",              "repo": "auth-service", "author": "priya",  "state": "open"   },
+    { "title": "Database connection pool exhaust", "repo": "data-pipeline","author": "rahul",  "state": "open"   },
+    { "title": "Token refresh race condition",     "repo": "auth-service", "author": "priya",  "state": "closed" }
+  ],
+  "documents": [
+    { "title": "API Design Guidelines",   "author": "aditya", "related_to": "payment-api"  },
+    { "title": "Auth Flow Architecture",  "author": "priya",  "related_to": "auth-service" },
+    { "title": "Deployment Runbook",      "author": "rahul",  "related_to": "data-pipeline"},
+    { "title": "Payment Security Guide",  "author": "aditya", "related_to": "payment-api"  }
+  ]
+}
