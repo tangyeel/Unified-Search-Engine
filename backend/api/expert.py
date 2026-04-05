@@ -2,6 +2,7 @@ from fastapi import APIRouter, Query, Header, HTTPException
 from db.neo4j import run_query, get_driver
 from services.graph_builder import get_mock_graph
 from models.schemas import ExpertResult, Node
+from services import gdrive_search as gdrive_module
 from services.gdrive_search import GDriveSearchEngine, AuthError, ScopeError, RateLimitError, SearchSyntaxError, GDriveSearchError
 import os
 from datetime import datetime
@@ -93,6 +94,17 @@ def expert(q: str = Query(..., description="Topic or keyword")):
 
 
 def _gdrive_tokens():
+    refresh_token = os.getenv("GDRIVE_REFRESH_TOKEN")
+    client_id = os.getenv("GDRIVE_CLIENT_ID")
+    client_secret = os.getenv("GDRIVE_CLIENT_SECRET")
+    if refresh_token and client_id and client_secret:
+        return [{
+            "access_token": "",
+            "refresh_token": refresh_token,
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "expires_at": 0,
+        }]
     raw = os.getenv("GDRIVE_TOKENS") or ""
     if raw.strip():
         return [t.strip() for t in raw.split(",") if t.strip()]
@@ -106,12 +118,21 @@ def expert_drive(
     limit: int = Query(30, ge=1, le=200),
     x_gdrive_token: str | None = Header(default=None, alias="X-GDrive-Token"),
 ):
-    tokens = [x_gdrive_token] if x_gdrive_token else _gdrive_tokens()
-    if not tokens:
-        raise HTTPException(422, "No Drive tokens configured.")
+    if x_gdrive_token:
+        engine = GDriveSearchEngine([x_gdrive_token])
+    else:
+        try:
+            ensure = getattr(gdrive_module, "_ensure_engine", None)
+            engine = ensure() if callable(ensure) else None
+        except Exception:
+            engine = None
+        if engine is None:
+            tokens = _gdrive_tokens()
+            if not tokens:
+                raise HTTPException(422, "No Drive tokens configured.")
+            engine = GDriveSearchEngine(tokens)
 
     try:
-        engine = GDriveSearchEngine(tokens)
         resp = engine.search(q, kind="files", limit=limit).to_dict()
     except RateLimitError as e:
         raise HTTPException(429, str(e))
