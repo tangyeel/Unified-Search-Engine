@@ -5,8 +5,9 @@ Run with:  uvicorn main:app --reload --port 8000
 
 import os
 from dotenv import load_dotenv
-from fastapi import FastAPI, Header
+from fastapi import FastAPI, Header, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
 
 from db.neo4j import close_driver
@@ -61,19 +62,46 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-_cors_raw = os.getenv("CORS_ALLOW_ORIGINS", "*")
-if _cors_raw.strip() == "*":
-    _cors_origins = ["*"]
-else:
-    _cors_origins = [o.strip() for o in _cors_raw.split(",") if o.strip()]
+# ── CORS ─────────────────────────────────────────────────────────────────────
+# Explicitly list all allowed origins. allow_credentials must stay False
+# when allow_origins contains "*".
+
+ALLOWED_ORIGINS = [
+    "*",                                      # catch-all
+    "https://eclipse-final.vercel.app",       # production frontend
+    "http://localhost:3000",                  # local dev (Next.js default)
+    "http://localhost:5173",                  # local dev (Vite default)
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_cors_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"https://.*\.vercel\.app",   # any Vercel preview URL
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=86400,   # cache preflight for 24 h
 )
+
+
+# ── Fallback OPTIONS handler (safety net for every route) ────────────────────
+
+@app.options("/{rest_of_path:path}")
+async def preflight_handler(request: Request, rest_of_path: str):
+    """Return 200 for all OPTIONS preflight requests."""
+    return JSONResponse(
+        content="OK",
+        headers={
+            "Access-Control-Allow-Origin": request.headers.get("origin", "*"),
+            "Access-Control-Allow-Methods": "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Max-Age": "86400",
+        },
+    )
+
 
 # ── Routers ──────────────────────────────────────────────────────────────────
 
