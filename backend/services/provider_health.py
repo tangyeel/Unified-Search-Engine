@@ -38,6 +38,9 @@ def health_sources(
         os.getenv("GDRIVE_TOKEN", ""),
         os.getenv("GDRIVE_TOKENS", ""),
     )
+    gdrive_refresh = os.getenv("GDRIVE_REFRESH_TOKEN", "")
+    gdrive_client_id = os.getenv("GDRIVE_CLIENT_ID", "")
+    gdrive_client_secret = os.getenv("GDRIVE_CLIENT_SECRET", "")
 
     out = {"github": {}, "slack": {}, "gdrive": {}}
 
@@ -88,7 +91,38 @@ def health_sources(
             out["slack"] = {"status": "error", "detail": str(e)}
 
     # --- Google Drive ---
-    if not gdrive_token:
+    if not gdrive_token and gdrive_refresh and gdrive_client_id and gdrive_client_secret:
+        try:
+            resp = requests.post(
+                "https://oauth2.googleapis.com/token",
+                data={
+                    "client_id": gdrive_client_id,
+                    "client_secret": gdrive_client_secret,
+                    "refresh_token": gdrive_refresh,
+                    "grant_type": "refresh_token",
+                },
+                timeout=8,
+            )
+            data = resp.json()
+            access = data.get("access_token")
+            if access:
+                info = requests.get(
+                    "https://www.googleapis.com/oauth2/v3/tokeninfo",
+                    params={"access_token": access},
+                    timeout=8,
+                ).json()
+                out["gdrive"] = {
+                    "status": "ok",
+                    "mode": "refresh_token",
+                    "email": info.get("email", "unknown"),
+                    "scope": info.get("scope"),
+                    "expires_in": data.get("expires_in"),
+                }
+            else:
+                out["gdrive"] = {"status": "error", "error": data.get("error_description", "refresh_failed")}
+        except Exception as e:
+            out["gdrive"] = {"status": "error", "detail": str(e)}
+    elif not gdrive_token:
         out["gdrive"] = {"status": "missing_token"}
     else:
         try:
