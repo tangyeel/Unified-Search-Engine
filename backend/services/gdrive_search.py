@@ -899,6 +899,14 @@ try:
                 _engine = GDriveSearchEngine(env_tokens)
         return _engine
 
+    def _refresh_if_needed(engine: "GDriveSearchEngine"):
+        for tok in engine._pool._pool:
+            if tok.expired and tok.can_refresh:
+                try:
+                    engine._pool._refresh(tok)
+                except Exception:
+                    continue
+
     @router.post("/search/gdrive/configure")
     def configure(cfg: TokenConfig):
         global _engine
@@ -948,6 +956,7 @@ try:
         engine = _ensure_engine()
         if engine is None:
             raise HTTPException(422, "No tokens configured.")
+        _refresh_if_needed(engine)
         return engine.token_status
 
     @router.get("/search/gdrive/accounts")
